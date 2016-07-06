@@ -1,0 +1,18 @@
+[package]
+name = "arduino"
+version = "0.1.0"
+authors = [
+  "The AVR-Rust Project Developers",
+  "Jake Goulding <jake.goulding@gmail.com>",
+]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/avr-rust/arduino"
+homepage = "https://github.com/avr-rust/arduino"
+description = """
+Reusable components for the Arduino Uno.
+"""
+keywords = ["avr", "arduino", "uno"]
+
+[dependencies.core]
+path = "../libcore"
