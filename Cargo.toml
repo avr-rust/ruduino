@@ -13,6 +13,3 @@ description = """
 Reusable components for the Arduino Uno.
 """
 keywords = ["avr", "arduino", "uno"]
-
-[dependencies.core]
-path = "../libcore"
