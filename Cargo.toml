@@ -13,3 +13,7 @@ description = """
 Reusable components for the Arduino Uno.
 """
 keywords = ["avr", "arduino", "uno"]
+
+[build-dependencies]
+avr-mcu = "0.2"
+
