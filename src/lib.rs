@@ -6,12 +6,26 @@
 
 #![no_core]
 
-extern crate core;
+#![no_std]
+
+pub use self::reg::Register;
+pub use self::pin::Pin;
+pub use self::spi::HardwareSpi;
 
 pub mod prelude;
+pub mod serial;
 pub mod timer0;
 pub mod timer1;
-pub mod serial;
+pub mod cores;
+
+mod reg;
+mod pin;
+mod spi;
+
+pub enum DataDirection {
+    Input,
+    Output,
+}
 
 macro_rules! bit {
     (-, $pos:expr) => {};
