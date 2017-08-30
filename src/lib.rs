@@ -8,6 +8,7 @@
 pub use self::reg::Register;
 pub use self::pin::Pin;
 pub use self::spi::HardwareSpi;
+pub use self::usart::HardwareUsart;
 
 pub mod prelude;
 pub mod serial;
@@ -18,6 +19,7 @@ pub mod cores;
 mod reg;
 mod pin;
 mod spi;
+mod usart;
 
 pub enum DataDirection {
     Input,
