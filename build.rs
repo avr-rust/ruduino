@@ -53,7 +53,8 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{HardwareSpi, HardwareUsart, Register}};")?;
+    writeln!(w, "use {{HardwareUsart, Register}};")?;
+    writeln!(w, "use spi::HardwareSpi;")?;
     writeln!(w)?;
 
     gen::write_registers(mcu, w)?;

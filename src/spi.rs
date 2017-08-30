@@ -133,8 +133,7 @@ pub trait HardwareSpi {
 }
 
 /// Constants for the control register.
-#[allow(dead_code)]
-mod control_register {
+pub mod control_register {
     pub const INTERRUPT_ENABLE: u8 = 1<<7;
     pub const ENABLE: u8 = 1<<6;
     pub const DATA_ORDER_LSB: u8 = 1<<5;
@@ -151,7 +150,7 @@ mod control_register {
 
 /// Constants for the status register.
 #[allow(dead_code)]
-mod status_register {
+pub mod status_register {
     /// SPI interrupt flag.
     pub const SPIF: u8 = 1<<7;
     /// Write collision flag.
