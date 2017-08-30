@@ -53,12 +53,13 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{HardwareSpi, Pin, Register}};")?;
+    writeln!(w, "use {{HardwareSpi, HardwareUsart, Pin, Register}};")?;
     writeln!(w)?;
 
     gen::write_registers(mcu, w)?;
     gen::write_pins(mcu, w)?;
     gen::write_spi_modules(mcu, w)?;
+    gen::write_usarts(mcu, w)?;
 
     writeln!(w)
 }
@@ -148,6 +149,32 @@ mod gen {
                 writeln!(w, "    type {} = {};", const_name, reg.name)?;
             }
             writeln!(w, "}}")?;
+        }
+        Ok(())
+    }
+
+    pub fn write_usarts(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+        if let Some(module) = mcu.module("USART") {
+            for usart in module.register_groups.iter() {
+                writeln!(w, "pub struct {};", usart.name)?;
+                writeln!(w)?;
+                writeln!(w, "impl HardwareUsart for {} {{", usart.name)?;
+                for register in usart.registers.iter() {
+                    let reg_ty = if register.name.starts_with("UDR") { // the data register.
+                        "UDR".to_owned()
+                    } else if register.name.starts_with("UCSR") { // one of the three control/status registers.
+                        let suffix = register.name.chars().rev().next().unwrap();
+                        format!("UCSR{}", suffix)
+                    } else if register.name.starts_with("UBRR") { // the baud rate register.
+                        "UBRR".to_owned()
+                    } else {
+                        panic!("unknown usart register '{}'", register.name);
+                    };
+                    writeln!(w, "    type {} = {};", reg_ty, register.name)?;
+                }
+                writeln!(w, "}}")?;
+                writeln!(w)?;
+            }
         }
         Ok(())
     }
