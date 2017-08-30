@@ -53,7 +53,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{HardwareSpi, HardwareUsart, Pin, Register}};")?;
+    writeln!(w, "use {{HardwareSpi, HardwareUsart, Register}};")?;
     writeln!(w)?;
 
     gen::write_registers(mcu, w)?;
@@ -87,10 +87,17 @@ mod gen {
 
     pub fn write_pins(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         if let Some(port) = mcu.peripheral("PORT") {
+            writeln!(w, "pub mod port {{")?;
+            writeln!(w, "    use super::*;")?;
+            writeln!(w, "    use Pin;")?;
+            writeln!(w)?;
+
             for instance in port.instances.iter() {
+                let port_letter = instance.name.chars().rev().next().unwrap();
+
                 for signal in instance.signals.iter() {
                     let idx = signal.index.expect("signal with no index");
-                    let struct_name = pin_name(instance, signal);
+                    let struct_name = format!("{}{}", port_letter, idx);
 
                     let io_module = mcu.modules.iter().find(|m| m.name == "PORT")
                         .expect("no port io module defined for this port");
@@ -98,22 +105,25 @@ mod gen {
                         .find(|rg| rg.name == instance.name)
                         .expect("no register group defined for this port");
 
-                    writeln!(w, "pub struct {};", struct_name)?;
+                    writeln!(w, "    pub struct {};", struct_name)?;
                     writeln!(w)?;
-                    writeln!(w, "impl Pin for {} {{", struct_name)?;
+                    writeln!(w, "    impl Pin for {} {{", struct_name)?;
                     for reg in register_group.registers.iter() {
                         let mut const_name = reg.name.clone();
                         const_name.pop(); // Pop port character from register name (DDRB/PORTB/etc)..
 
-                        writeln!(w, "    /// {}.", reg.caption)?;
-                        writeln!(w, "    type {} = {};", const_name, reg.name)?;
+                        writeln!(w, "        /// {}.", reg.caption)?;
+                        writeln!(w, "        type {} = {};", const_name, reg.name)?;
                     }
-                    writeln!(w, "    /// {}", signal.pad)?;
-                    writeln!(w, "    const MASK: u8 = 1<<{};", idx)?;
-                    writeln!(w, "}}")?;
+                    writeln!(w, "        /// {}", signal.pad)?;
+                    writeln!(w, "        const MASK: u8 = 1<<{};", idx)?;
+                    writeln!(w, "    }}")?;
                     writeln!(w)?;
                 }
             }
+
+            writeln!(w, "}}")?;
+            writeln!(w)?;
         }
         Ok(())
     }
@@ -152,11 +162,10 @@ mod gen {
                     _ => panic!("unknown SPI module register: {}", reg.caption),
                 };
 
-
-                writeln!(w, "    /// {}.", reg.caption)?;
                 writeln!(w, "    type {} = {};", const_name, reg.name)?;
             }
             writeln!(w, "}}")?;
+            writeln!(w)?;
         }
         Ok(())
     }
@@ -170,12 +179,12 @@ mod gen {
                 writeln!(w, "impl HardwareUsart for {} {{", usart.name)?;
                 for register in usart.registers.iter() {
                     let reg_ty = if register.name.starts_with("UDR") { // the data register.
-                        "UDR".to_owned()
+                        "DataRegister".to_owned()
                     } else if register.name.starts_with("UCSR") { // one of the three control/status registers.
                         let suffix = register.name.chars().rev().next().unwrap();
-                        format!("UCSR{}", suffix)
+                        format!("ControlRegister{}", suffix)
                     } else if register.name.starts_with("UBRR") { // the baud rate register.
-                        "UBRR".to_owned()
+                        "BaudRateRegister".to_owned()
                     } else {
                         panic!("unknown usart register '{}'", register.name);
                     };
@@ -191,7 +200,8 @@ mod gen {
     /// Gets the name of a pin.
     fn pin_name(instance: &Instance, signal: &Signal) -> String {
         let idx = signal.index.expect("signal with no index");
-        format!("{}{}", instance.name, idx)
+        let letter = instance.name.chars().rev().next().unwrap();
+        format!("port::{}{}", letter, idx)
     }
 }
 
