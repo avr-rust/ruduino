@@ -133,15 +133,23 @@ mod gen {
                     .expect("no port signal associated with the spi signal pad");
                 let pin_name = self::pin_name(port_instance, port_signal);
 
-                writeln!(w, "    type {} = {};", spi_signal_name, pin_name)?;
+                let const_name = match &spi_signal_name[..] {
+                    "MISO" => "MasterInSlaveOut",
+                    "MOSI" => "MasterOutSlaveIn",
+                    "SCK" => "Clock",
+                    "SS" => "SlaveSelect",
+                    _ => panic!("unknown spi signal name: '{}'", spi_signal_name),
+                };
+
+                writeln!(w, "    type {} = {};", const_name, pin_name)?;
             }
 
             for reg in module.registers() {
                 let const_name = match &reg.caption[..] {
-                    "SPI Data Register" => "SPDR",
-                    "SPI Status Register" => "SPSR",
-                    "SPI Control Register" => "SPCR",
-                    _ => panic!("unknown SPI module register: '{}'", reg.caption),
+                    "SPI Data Register" => "DataRegister",
+                    "SPI Status Register" => "StatusRegister",
+                    "SPI Control Register" => "ControlRegister",
+                    _ => panic!("unknown SPI module register: {}", reg.caption),
                 };
 
 
@@ -156,6 +164,7 @@ mod gen {
     pub fn write_usarts(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         if let Some(module) = mcu.module("USART") {
             for usart in module.register_groups.iter() {
+                writeln!(w, "/// The {} module.", usart.name)?;
                 writeln!(w, "pub struct {};", usart.name)?;
                 writeln!(w)?;
                 writeln!(w, "impl HardwareUsart for {} {{", usart.name)?;
