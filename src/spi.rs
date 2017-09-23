@@ -1,6 +1,5 @@
 use {Register, Pin};
 
-
 /// An SPI module.
 ///
 /// Information at
@@ -149,7 +148,6 @@ pub mod control_register {
 }
 
 /// Constants for the status register.
-#[allow(dead_code)]
 pub mod status_register {
     /// SPI interrupt flag.
     pub const SPIF: u8 = 1<<7;
