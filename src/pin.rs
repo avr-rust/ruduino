@@ -2,7 +2,7 @@ use {DataDirection, Register};
 
 /// An IO pin.
 pub trait Pin {
-    /// The associated data direction registerr.
+    /// The associated data direction register.
     type DDR: Register<u8>;
     /// The associated port register.
     type PORT: Register<u8>;
