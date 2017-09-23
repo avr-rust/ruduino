@@ -5,7 +5,7 @@
 
 #![no_std]
 
-pub use self::reg::Register;
+pub use self::register::{Register, RegisterValue};
 pub use self::pin::Pin;
 pub use self::usart::HardwareUsart;
 
@@ -17,7 +17,7 @@ pub mod cores;
 
 pub mod spi;
 
-mod reg;
+mod register;
 mod pin;
 mod usart;
 

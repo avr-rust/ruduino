@@ -1,6 +1,6 @@
 use core::{cmp, convert, ops};
 
-pub trait RegVal : Copy + Clone +
+pub trait RegisterValue : Copy + Clone +
                ops::BitAnd<Output=Self> +
                ops::BitAndAssign +
                ops::BitOr<Output=Self> +
@@ -14,7 +14,7 @@ pub trait RegVal : Copy + Clone +
 }
 
 /// A register.
-pub trait Register<T: RegVal> {
+pub trait Register<T: RegisterValue> {
     /// The address of the register.
     const ADDR: *mut T;
 
@@ -90,6 +90,6 @@ pub trait Register<T: RegVal> {
     }
 }
 
-impl RegVal for u8 { }
-impl RegVal for u16 { }
+impl RegisterValue for u8 { }
+impl RegisterValue for u16 { }
 
