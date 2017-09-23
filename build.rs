@@ -44,8 +44,12 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
     writeln!(w, "//! Cores")?;
     writeln!(w)?;
     for mcu in mcus {
+        let module_name = core_module_name(mcu);
         writeln!(w, "/// The {}.", mcu.device.name)?;
-        writeln!(w, "pub mod {};", core_module_name(mcu))?;
+        writeln!(w, "pub mod {};", module_name)?;
+
+        writeln!(w, "#[cfg(all(target_arch = \"avr\", target_cpu = \"{}\"))]", module_name)?;
+        writeln!(w, "pub use self::{} as current;", module_name)?;
     }
     writeln!(w)
 }
