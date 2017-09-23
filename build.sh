@@ -1,2 +1,2 @@
 #! /bin/sh
-xargo build --target avr-atmega328p
+xargo build --target avr-atmega328p $@
