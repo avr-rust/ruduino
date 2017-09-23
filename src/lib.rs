@@ -2,6 +2,8 @@
 
 #![feature(asm)]
 #![feature(associated_consts)]
+#![feature(lang_items)]
+#![feature(unwind_attributes)]
 
 #![no_std]
 
@@ -20,6 +22,8 @@ pub mod spi;
 mod register;
 mod pin;
 mod usart;
+#[doc(hidden)]
+pub mod std_stub;
 
 pub enum DataDirection {
     Input,
