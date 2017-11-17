@@ -3,6 +3,8 @@ use core::ptr::write_volatile;
 
 use super::*;
 
+use cores::atmega328p as c;
+
 pub enum ClockSource {
     None,
     Prescale1,
@@ -121,18 +123,18 @@ impl Timer {
     #[inline]
     pub fn configure(self) {
         unsafe {
-            write_volatile(TCCR0A, self.a);
-            write_volatile(TCCR0B, self.b);
+            c::TCCR0A::write(self.a);
+            c::TCCR0B::write(self.b);
 
             // Reset counter to zero
-            write_volatile(TCNT0, 0);
+            c::TCNT0::write(0);
 
             if let Some(v) = self.output_compare_1 {
                 // Set the match
-                write_volatile(OCR0A, v);
+                c::OCR0A::write(v);
 
                 // Enable compare interrupt
-                write_volatile(TIMSK0, OCIE0A);
+                c::TIMSK0::OCIE0A.set_all();
             }
         }
     }

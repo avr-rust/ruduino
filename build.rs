@@ -6,8 +6,12 @@ use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
+fn src_path() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("src")
+}
+
 fn cores_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join("cores")
+    src_path().join("cores")
 }
 
 fn core_module_name(mcu: &Mcu) -> String {
@@ -21,7 +25,8 @@ fn main() {
 
     let current_mcu = avr_mcu::current::mcu()
         .expect("no target cpu specified");
-    generate_cores(&[current_mcu]).unwrap()
+    generate_config_module().unwrap();
+    generate_cores(&[current_mcu]).unwrap();
 }
 
 fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
@@ -29,6 +34,15 @@ fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
         generate_core_module(mcu).expect("failed to generate mcu core");
     }
     generate_cores_mod_rs(mcus)
+}
+
+fn generate_config_module() -> Result<(), io::Error> {
+    let path = src_path().join("config.rs");
+    let mut f = File::create(&path)?;
+
+    let clock = env!("AVR_CPU_FREQUENCY");
+    writeln!(f, "pub const CPU_FREQUENCY: u32 = {};", clock)?;
+    Ok(())
 }
 
 fn generate_core_module(mcu: &Mcu) -> Result<(), io::Error> {
@@ -57,7 +71,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{HardwareUsart, Register}};")?;
+    writeln!(w, "use {{Mask, Bitset, HardwareUsart, Register}};")?;
     writeln!(w, "use spi::HardwareSpi;")?;
     writeln!(w)?;
 
@@ -82,6 +96,33 @@ mod gen {
             if register.name == "GTCCR" { continue; }
 
             writeln!(w, "pub struct {};", register.name)?;
+            writeln!(w)?;
+
+            writeln!(w, "impl {} {{", register.name)?;
+            for bitfield in register.bitfields.iter() {
+                // Create a mask for the whole bitset.
+                writeln!(w, "    pub const {}: Bitset<{}, Self> = Bitset::new(0x{:x});", bitfield.name, ty, bitfield.mask)?;
+
+                // We create masks for the individual bits in the field if there
+                // is more than one bit in the field.
+                if bitfield.mask.count_ones() > 1 {
+                    let mut current_mask = bitfield.mask;
+                    let mut current_mask_bit_num = 0;
+                    for current_register_bit_num in 0..15 {
+                        if (current_mask & 0b1) == 0b1 {
+                            writeln!(w, "    pub const {}{}: Mask<{}, Self> = Mask::new(1<<{});",
+                                     bitfield.name, current_mask_bit_num, ty, current_register_bit_num)?;
+                            current_mask_bit_num += 1;
+                        }
+
+                        current_mask >>= 1;
+                    }
+                }
+                writeln!(w)?;
+            }
+            writeln!(w, "}}")?;
+            writeln!(w)?;
+
             writeln!(w, "impl Register<{}> for {} {{", ty, register.name)?;
             writeln!(w, "    const ADDR: *mut {} = 0x{:x} as *mut {};", ty, register.offset, ty)?;
             writeln!(w, "}}")?;

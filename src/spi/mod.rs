@@ -1,3 +1,6 @@
+mod clock;
+mod settings;
+
 use {Register, Pin};
 
 /// An SPI module.
@@ -18,7 +21,7 @@ pub trait HardwareSpi {
     type DataRegister: Register<u8>;
 
     /// Sets up the SPI as a master.
-    fn setup_master() {
+    fn setup_master(clock: u32) {
         // Setup DDR registers.
         Self::MasterInSlaveOut::set_input();
         Self::MasterOutSlaveIn::set_output();
@@ -27,11 +30,11 @@ pub trait HardwareSpi {
 
         Self::set_master();
         Self::enable_interrupt();
-        Self::enable();
+        Self::setup_common(clock)
     }
 
     /// Sets up the SPI as a slave.
-    fn setup_slave() {
+    fn setup_slave(clock: u32) {
         // Setup DDR registers.
         Self::MasterInSlaveOut::set_output();
         Self::MasterOutSlaveIn::set_input();
@@ -39,7 +42,19 @@ pub trait HardwareSpi {
         Self::SlaveSelect::set_input();
 
         Self::set_slave();
-        Self::enable();
+        Self::setup_common(clock)
+    }
+
+    fn setup_common(clock: u32) {
+        Self::set_clock(clock);
+        Self::enable()
+    }
+
+    /// Sets the clock speed.
+    fn set_clock(clock: u32) {
+        let mask = clock::ClockMask::with_clock(clock);
+        Self::ControlRegister::set(mask.control_register_mask());
+        Self::StatusRegister::set(mask.status_register_mask());
     }
 
     /// Enables interrupts for the spi module.

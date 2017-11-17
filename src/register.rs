@@ -1,4 +1,4 @@
-use core::{cmp, convert, ops};
+use core::{cmp, convert, marker, ops};
 
 pub trait RegisterValue : Copy + Clone +
                ops::BitAnd<Output=Self> +
@@ -14,7 +14,9 @@ pub trait RegisterValue : Copy + Clone +
 }
 
 /// A register.
-pub trait Register<T: RegisterValue> {
+pub trait Register<T: RegisterValue> : Sized {
+    type Mask = Mask<T, Self>;
+
     /// The address of the register.
     const ADDR: *mut T;
 
@@ -33,6 +35,8 @@ pub trait Register<T: RegisterValue> {
     }
 
     /// Sets a bitmask in a register.
+    ///
+    /// This is equivalent to `r |= mask`.
     #[inline(always)]
     fn set(mask: T) {
         unsafe {
@@ -41,6 +45,8 @@ pub trait Register<T: RegisterValue> {
     }
 
     /// Clears a bitmask from a register.
+    ///
+    /// This is equivalent to `r &= !mask`.
     #[inline(always)]
     fn unset(mask: T) {
         unsafe {
@@ -49,6 +55,8 @@ pub trait Register<T: RegisterValue> {
     }
 
     /// Toggles a mask in the register.
+    ///
+    /// This is equivalent to `r ^= mask`.
     #[inline(always)]
     fn toggle(mask: T) {
         unsafe {
@@ -57,6 +65,8 @@ pub trait Register<T: RegisterValue> {
     }
 
     /// Checks if a mask is set in the register.
+    ///
+    /// This is equivalent to `(r & mask) == mask`.
     #[inline(always)]
     fn is_set(mask: T) -> bool {
         unsafe {
@@ -65,6 +75,8 @@ pub trait Register<T: RegisterValue> {
     }
 
     /// Checks if a mask is clear in the register.
+    ///
+    /// This is equivalent to `(r & mask) == 0`.
     #[inline(always)]
     fn is_clear(mask: T) -> bool {
         unsafe {
@@ -87,6 +99,64 @@ pub trait Register<T: RegisterValue> {
     #[inline(always)]
     fn wait_until_set(mask: T) {
         Self::wait_until(|| Self::is_set(mask))
+    }
+}
+
+/// A register bitmask.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Bitset<T: RegisterValue, R: Register<T>> {
+    mask: T,
+    _phantom: marker::PhantomData<R>,
+}
+
+/// A register bitmask.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Mask<T: RegisterValue, R: Register<T>> {
+    mask: T,
+    _phantom: marker::PhantomData<R>,
+}
+
+impl<T,R> Bitset<T,R>
+    where T: RegisterValue, R: Register<T> {
+    /// Creates a new register mask.
+    pub const fn new(mask: T) -> Self {
+        Bitset { mask, _phantom: marker::PhantomData }
+    }
+
+    /// Sets the mask in the register.
+    ///
+    /// This is equivalent to `r |= mask`.
+    pub fn set_all(self) {
+        R::set(self.mask);
+    }
+
+    /// Clears the mask from the register.
+    ///
+    /// This is equivalent to `r &= !mask`.
+    pub fn unset_all(self) {
+        R::unset(self.mask);
+    }
+
+    /// Toggles the masked bits in the register.
+    ///
+    /// This is equivalent to `r ^= mask`.
+    pub fn toggle_all(self) {
+        R::toggle(self.mask);
+    }
+
+    /// Checks if the mask is clear.
+    ///
+    /// This is equivalent to `(r & mask) == 0`.
+    pub fn is_clear(self) -> bool {
+        R::is_clear(self.mask)
+    }
+}
+
+impl<T,R> Mask<T,R>
+    where T: RegisterValue, R: Register<T> {
+    /// Creates a new register mask.
+    pub const fn new(mask: T) -> Self {
+        Mask { mask, _phantom: marker::PhantomData }
     }
 }
 
