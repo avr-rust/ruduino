@@ -2,12 +2,14 @@
 
 #![feature(asm)]
 #![feature(associated_consts)]
+#![feature(associated_type_defaults)]
+#![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(unwind_attributes)]
 
 #![no_std]
 
-pub use self::register::{Register, RegisterValue};
+pub use self::register::{Bitset, Mask, Register, RegisterValue};
 pub use self::pin::Pin;
 pub use self::usart::HardwareUsart;
 
@@ -18,6 +20,7 @@ pub mod timer1;
 pub mod cores;
 
 pub mod spi;
+pub mod config;
 
 mod register;
 mod pin;
