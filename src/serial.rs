@@ -1,7 +1,9 @@
+//! A serial.
+//!
+//! *WARNING* The current implementation of this will only work on ATmega328.
+
 use core::prelude::v1::*;
 use core::ptr::{read_volatile, write_volatile};
-
-use super::*;
 
 pub enum CharacterSize {
     FiveBits,
@@ -107,6 +109,8 @@ impl StopBits {
     }
 }
 
+/// A serial connection.
+/// *WARNING* The current implementation of this will only work on ATmega328.
 pub struct Serial {
     ubrr: u16,
     a: u8,
@@ -223,4 +227,42 @@ pub fn try_receive() -> Option<u8> {
     } else {
         None
     }
+}
+
+// Dirty hack.
+// We should write this out and use the neat build-script method instead.
+use self::hack::*;
+mod hack {
+    macro_rules! bit {
+        (-, $pos:expr) => {};
+        ($name:ident, $pos:expr) => {
+            pub const $name: u8 = 1 << $pos;
+        };
+    }
+
+    macro_rules! register {
+        ($address:expr, $name:ident, [$b7:tt, $b6:tt, $b5:tt, $b4:tt, $b3:tt, $b2:tt, $b1:tt, $b0:tt]) => {
+            register!($address, $name);
+            bit!($b7, 7);
+            bit!($b6, 6);
+            bit!($b5, 5);
+            bit!($b4, 4);
+            bit!($b3, 3);
+            bit!($b2, 2);
+            bit!($b1, 1);
+            bit!($b0, 0);
+        };
+        ($address:expr, $name:ident) => {
+            pub const $name: *mut u8 = $address as *mut u8;
+        };
+    }
+
+    register!(0xC6, UDR0                                                                            );
+    register!(0xC4, UBRR0L                                                                          );
+    register!(0xC2, UCSR0C, [UMSEL01, UMSEL00, UPM01,   UPM00,   USBS0,   UCSZ01,  UCSZ00,  UCPOL0 ]);
+    register!(0xC1, UCSR0B, [RXCIE0,  TXCIE0,  UDRIE0,  RXEN0,   TXEN0,   UCSZ02,  RXB80,   TXB80  ]);
+    register!(0xC0, UCSR0A, [RXC0,    TXC0,    UDRE0,   FE0,     DOR0,    UPE0,    U2X0,    MPCM0  ]);
+
+    // 16-bit register pairs
+    pub const UBRR0: *mut u16 = UBRR0L as *mut u16;
 }
