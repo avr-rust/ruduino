@@ -14,7 +14,6 @@ pub use self::usart::HardwareUsart;
 
 pub mod prelude;
 pub mod serial;
-pub mod timer1;
 pub mod cores;
 pub mod modules;
 
