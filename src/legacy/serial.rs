@@ -257,11 +257,11 @@ mod hack {
         };
     }
 
-    register!(0xC6, UDR0                                                                            );
-    register!(0xC4, UBRR0L                                                                          );
-    register!(0xC2, UCSR0C, [UMSEL01, UMSEL00, UPM01,   UPM00,   USBS0,   UCSZ01,  UCSZ00,  UCPOL0 ]);
-    register!(0xC1, UCSR0B, [RXCIE0,  TXCIE0,  UDRIE0,  RXEN0,   TXEN0,   UCSZ02,  RXB80,   TXB80  ]);
-    register!(0xC0, UCSR0A, [RXC0,    TXC0,    UDRE0,   FE0,     DOR0,    UPE0,    U2X0,    MPCM0  ]);
+    register!(0xC6, UDR0);
+    register!(0xC4, UBRR0L);
+    register!(0xC2, UCSR0C, [UMSEL01, UMSEL00, UPM01, UPM00, USBS0, UCSZ01, UCSZ00, - ]);
+    register!(0xC1, UCSR0B, [-, -, -, RXEN0, TXEN0, UCSZ02, -, - ]);
+    register!(0xC0, UCSR0A, [RXC0, -, UDRE0, -, -, -, -, - ]);
 
     // 16-bit register pairs
     pub const UBRR0: *mut u16 = UBRR0L as *mut u16;
