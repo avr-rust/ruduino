@@ -1,5 +1,7 @@
 extern crate avr_mcu;
 
+mod gen;
+
 use avr_mcu::*;
 use std::fs::{self, File};
 use std::io;
@@ -83,6 +85,4 @@ fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
 
     writeln!(w)
 }
-
-mod gen;
 
