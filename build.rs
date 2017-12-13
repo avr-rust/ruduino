@@ -124,7 +124,7 @@ mod gen {
 
             writeln!(w, "impl Register for {} {{", register.name)?;
             writeln!(w, "    type T = {};", ty)?;
-            writeln!(w, "    const ADDR: *mut {} = 0x{:x} as *mut {};", ty, register.offset, ty)?;
+            writeln!(w, "    const ADDRESS: *mut {} = 0x{:x} as *mut {};", ty, register.offset, ty)?;
             writeln!(w, "}}")?;
         }
 
