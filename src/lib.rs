@@ -14,10 +14,10 @@
 #![no_std]
 
 pub use self::register::{Bitset, Mask, Register, RegisterValue};
-pub use self::pin::Pin;
+pub use self::pin::{DataDirection, Pin};
 
 pub mod prelude;
-pub mod serial;
+pub mod legacy;
 pub mod cores;
 pub mod modules;
 
@@ -27,9 +27,4 @@ mod register;
 mod pin;
 #[doc(hidden)]
 pub mod std_stub;
-
-pub enum DataDirection {
-    Input,
-    Output,
-}
 
