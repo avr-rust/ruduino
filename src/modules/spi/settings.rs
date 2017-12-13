@@ -96,6 +96,7 @@ impl Default for Settings {
 }
 
 /// Constants for the control register.
+#[allow(dead_code)]
 pub mod control_register {
     /// Set if interrupts are enabled.
     pub const INTERRUPT_ENABLE: u8 = 1<<7;
@@ -116,6 +117,7 @@ pub mod control_register {
 }
 
 /// Constants for the status register.
+#[allow(dead_code)]
 pub mod status_register {
     /// SPI interrupt flag.
     pub const SPIF: u8 = 1<<7;

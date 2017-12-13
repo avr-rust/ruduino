@@ -72,13 +72,14 @@ fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
     writeln!(w, "use {{Mask, Bitset, HardwareUsart, Register}};")?;
-    writeln!(w, "use spi::HardwareSpi;")?;
+    writeln!(w, "use modules;")?;
     writeln!(w)?;
 
     gen::write_registers(mcu, w)?;
     gen::write_pins(mcu, w)?;
     gen::write_spi_modules(mcu, w)?;
     gen::write_usarts(mcu, w)?;
+    gen::write_timers(mcu, w)?;
 
     writeln!(w)
 }
@@ -105,18 +106,16 @@ mod gen {
 
                 // We create masks for the individual bits in the field if there
                 // is more than one bit in the field.
-                if bitfield.mask.count_ones() > 1 {
-                    let mut current_mask = bitfield.mask;
-                    let mut current_mask_bit_num = 0;
-                    for current_register_bit_num in 0..15 {
-                        if (current_mask & 0b1) == 0b1 {
-                            writeln!(w, "    pub const {}{}: Mask<{}, Self> = Mask::new(1<<{});",
-                                     bitfield.name, current_mask_bit_num, ty, current_register_bit_num)?;
-                            current_mask_bit_num += 1;
-                        }
-
-                        current_mask >>= 1;
+                let mut current_mask = bitfield.mask;
+                let mut current_mask_bit_num = 0;
+                for current_register_bit_num in 0..15 {
+                    if (current_mask & 0b1) == 0b1 {
+                        writeln!(w, "    pub const {}{}: Mask<{}, Self> = Mask::new(1<<{});",
+                                 bitfield.name, current_mask_bit_num, ty, current_register_bit_num)?;
+                        current_mask_bit_num += 1;
                     }
+
+                    current_mask >>= 1;
                 }
                 writeln!(w)?;
             }
@@ -181,7 +180,7 @@ mod gen {
 
             writeln!(w, "pub struct Spi;")?;
             writeln!(w)?;
-            writeln!(w, "impl HardwareSpi for Spi {{")?;
+            writeln!(w, "impl modules::HardwareSpi for Spi {{")?;
 
             for spi_signal in peripheral.signals() {
                 let spi_signal_name = spi_signal.group.clone().expect("spi signal does not have group name");
@@ -240,6 +239,43 @@ mod gen {
                 writeln!(w)?;
             }
         }
+        Ok(())
+    }
+
+    pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+        if let Some(tc) = mcu.module("TC8") { // Timer/Counter, 8-bit.
+            const TYPE_NAME: &'static str = "Timer8";
+
+            let find_reg = |name: &'static str| {
+                tc.registers().find(|r| r.name.starts_with(name))
+                    .expect(&format!("could not find '{}' register", name))
+            };
+            let find_reg_suffix = |name: &'static str, suffix: &'static str| {
+                tc.registers().find(|r| r.name.starts_with(name) && r.name.ends_with(suffix))
+                    .expect(&format!("could not find '{}' register", name))
+            };
+
+            writeln!(w, "/// 8-bit timer.")?;
+            writeln!(w, "pub struct {};", TYPE_NAME)?;
+            writeln!(w)?;
+            writeln!(w, "impl modules::Timer8 for {} {{", TYPE_NAME)?;
+            writeln!(w, "    type CompareA = {};", find_reg_suffix("OCR", "A").name)?;
+            writeln!(w, "    type CompareB = {};", find_reg_suffix("OCR", "B").name)?;
+            writeln!(w, "    type Counter = {};", find_reg("TCNT").name)?;
+            writeln!(w, "    type ControlA = {};", find_reg_suffix("TCCR", "A").name)?;
+            writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
+            writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
+            writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
+            writeln!(w, "    const CS0: Mask<u8, Self::ControlB> = Self::ControlB::CS00;")?;
+            writeln!(w, "    const CS1: Mask<u8, Self::ControlB> = Self::ControlB::CS01;")?;
+            writeln!(w, "    const CS2: Mask<u8, Self::ControlB> = Self::ControlB::CS02;")?;
+            writeln!(w, "    const WGM0: Mask<u8, Self::ControlA> = Self::ControlA::WGM00;")?;
+            writeln!(w, "    const WGM1: Mask<u8, Self::ControlA> = Self::ControlA::WGM01;")?;
+            writeln!(w, "    const WGM2: Mask<u8, Self::ControlB> = Self::ControlB::WGM020;")?;
+            writeln!(w, "    const OCIEA: Bitset<u8, Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
+            writeln!(w, "}}")?;
+        }
+
         Ok(())
     }
 

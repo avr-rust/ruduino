@@ -22,9 +22,9 @@ pub trait Register<T: RegisterValue> : Sized {
 
     /// Writes a value to the register.
     #[inline(always)]
-    fn write(value: T) {
+    fn write<V>(value: V) where V: Into<T> {
         unsafe {
-            *Self::ADDR = value;
+            *Self::ADDR = value.into();
         }
     }
 
@@ -181,6 +181,59 @@ impl<T,R> Mask<T,R>
     /// Creates a new register mask.
     pub const fn new(mask: T) -> Self {
         Mask { mask, _phantom: marker::PhantomData }
+    }
+
+    pub fn zero() -> Self {
+        Mask::new(0u8.into())
+    }
+}
+
+impl<T,R> ops::BitOr for Mask<T,R>
+    where T: RegisterValue, R: Register<T>
+{
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self {
+        Mask::new(self.mask | rhs.mask)
+    }
+}
+
+impl<T,R> ops::BitOrAssign for Mask<T,R>
+    where T: RegisterValue, R: Register<T> {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.mask |= rhs.mask;
+    }
+}
+
+impl<T,R> ops::BitAnd for Mask<T,R>
+    where T: RegisterValue, R: Register<T>
+{
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self {
+        Mask::new(self.mask & rhs.mask)
+    }
+}
+
+impl<T,R> ops::BitAndAssign for Mask<T,R>
+    where T: RegisterValue, R: Register<T> {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.mask &= rhs.mask;
+    }
+}
+
+impl<T,R> ops::Not for Mask<T,R>
+    where T: RegisterValue, R: Register<T> {
+    type Output = Self;
+
+    fn not(self) -> Self {
+        Mask::new(!self.mask)
+    }
+}
+
+impl<R> Into<u8> for Mask<u8,R> where R: Register<u8> {
+    fn into(self) -> u8 {
+        self.mask
     }
 }
 
