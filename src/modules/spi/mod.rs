@@ -1,5 +1,8 @@
 mod clock;
-mod settings;
+
+
+// FIXME: Start using this module or delete!!!
+#[allow(dead_code)] mod settings;
 
 use {Register, Pin};
 
