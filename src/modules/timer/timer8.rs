@@ -2,49 +2,49 @@ use {Bitset, Mask, Register};
 use core::marker;
 
 /// A 8-bit timer.
-pub trait Timer8 {
+pub trait Timer8 : Sized {
     /// The first compare register.
     /// For example, OCR0A.
-    type CompareA: Register<u8>;
+    type CompareA: Register<T=u8>;
 
     /// The second compare register.
     /// For example, OCR0B.
-    type CompareB: Register<u8>;
+    type CompareB: Register<T=u8>;
 
     /// The counter register.
     ///
     /// For example, TCNT0.
-    type Counter: Register<u8>;
+    type Counter: Register<T=u8>;
 
     /// The first control register.
     ///
     /// For example, TCCR0A.
-    type ControlA: Register<u8>;
+    type ControlA: Register<T=u8>;
 
     /// The second control register.
     ///
     /// For example, TCCR0B.
-    type ControlB: Register<u8>;
+    type ControlB: Register<T=u8>;
 
     /// The interrupt mask register.
     ///
     /// For example, TIMSK0.
-    type InterruptMask: Register<u8>;
+    type InterruptMask: Register<T=u8>;
 
     /// The interrupt flag register.
     ///
     /// For example, TIFR0.
-    type InterruptFlag: Register<u8>;
+    type InterruptFlag: Register<T=u8>;
 
-    const CS0: Mask<u8, Self::ControlB>;
-    const CS1: Mask<u8, Self::ControlB>;
-    const CS2: Mask<u8, Self::ControlB>;
+    const CS0: Mask<Self::ControlB>;
+    const CS1: Mask<Self::ControlB>;
+    const CS2: Mask<Self::ControlB>;
 
-    const WGM0: Mask<u8, Self::ControlA>;
-    const WGM1: Mask<u8, Self::ControlA>;
-    const WGM2: Mask<u8, Self::ControlB>;
+    const WGM0: Mask<Self::ControlA>;
+    const WGM1: Mask<Self::ControlA>;
+    const WGM2: Mask<Self::ControlB>;
 
-    const OCIEA: Bitset<u8, Self::InterruptMask>;
+    const OCIEA: Bitset<Self::InterruptMask>;
 }
 
 pub enum ClockSource {
@@ -59,7 +59,7 @@ pub enum ClockSource {
 }
 
 impl ClockSource {
-    fn bits<T: Timer8>(&self) -> Mask<u8, T::ControlB> {
+    fn bits<T: Timer8>(&self) -> Mask<T::ControlB> {
         use self::ClockSource::*;
 
         match *self {
@@ -75,7 +75,7 @@ impl ClockSource {
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> Mask<u8, T::ControlB> {
+    fn mask<T: Timer8>() -> Mask<T::ControlB> {
         !(T::CS2 | T::CS1 | T::CS0)
     }
 }
@@ -92,7 +92,7 @@ pub enum WaveformGenerationMode {
 impl WaveformGenerationMode {
     /// Returns bits for TCCR0A, TCCR0B
     #[inline]
-    fn bits<T: Timer8>(&self) -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+    fn bits<T: Timer8>(&self) -> (Mask<T::ControlA>, Mask<T::ControlB>) {
         use self::WaveformGenerationMode::*;
 
         // It makes more sense to return bytes (A,B), but the manual
@@ -114,14 +114,14 @@ impl WaveformGenerationMode {
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+    fn mask<T: Timer8>() -> (Mask<T::ControlA>, Mask<T::ControlB>) {
         (!(T::WGM0 | T::WGM1), !(T::WGM2))
     }
 }
 
 pub struct Timer8Setup<T: Timer8> {
-    a: Mask<u8, T::ControlA>,
-    b: Mask<u8, T::ControlB>,
+    a: Mask<T::ControlA>,
+    b: Mask<T::ControlB>,
     output_compare_1: Option<u8>,
     _phantom: marker::PhantomData<T>,
 }
