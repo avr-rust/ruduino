@@ -1,20 +1,20 @@
 use {Bitset, Mask, Register};
 use core::marker;
 
-/// A 8-bit timer.
-pub trait Timer8 {
+/// A 16-bit timer.
+pub trait Timer16 {
     /// The first compare register.
     /// For example, OCR0A.
-    type CompareA: Register<u8>;
+    type CompareA: Register<u16>;
 
     /// The second compare register.
     /// For example, OCR0B.
-    type CompareB: Register<u8>;
+    type CompareB: Register<u16>;
 
     /// The counter register.
     ///
     /// For example, TCNT0.
-    type Counter: Register<u8>;
+    type Counter: Register<u16>;
 
     /// The first control register.
     ///
@@ -25,6 +25,11 @@ pub trait Timer8 {
     ///
     /// For example, TCCR0B.
     type ControlB: Register<u8>;
+
+    /// The third control register.
+    ///
+    /// For example, TCCR0C.
+    type ControlC: Register<u8>;
 
     /// The interrupt mask register.
     ///
@@ -43,6 +48,7 @@ pub trait Timer8 {
     const WGM0: Mask<u8, Self::ControlA>;
     const WGM1: Mask<u8, Self::ControlA>;
     const WGM2: Mask<u8, Self::ControlB>;
+    const WGM3: Mask<u8, Self::ControlB>; // fixme: right reg?
 
     const OCIEA: Bitset<u8, Self::InterruptMask>;
 }
@@ -59,7 +65,7 @@ pub enum ClockSource {
 }
 
 impl ClockSource {
-    fn bits<T: Timer8>(&self) -> Mask<u8, T::ControlB> {
+    fn bits<T: Timer16>(&self) -> Mask<u8, T::ControlB> {
         use self::ClockSource::*;
 
         match *self {
@@ -75,24 +81,33 @@ impl ClockSource {
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> Mask<u8, T::ControlB> {
+    fn mask<T: Timer16>() -> Mask<u8, T::ControlB> {
         !(T::CS2 | T::CS1 | T::CS0)
     }
 }
 
 pub enum WaveformGenerationMode {
     Normal,
-    PwmPhaseCorrect,
+    PwmPhaseCorrect8Bit,
+    PwmPhaseCorrect9Bit,
+    PwmPhaseCorrect10Bit,
     ClearOnTimerMatchOutputCompare,
-    FastPwm                       ,
+    FastPwm8Bit,
+    FastPwm9Bit,
+    FastPwm10Bit,
+    PwmPhaseAndFrequencyCorrectInputCapture,
+    PwmPhaseAndFrequencyCorrectOutputCompare,
+    PwmPhaseCorrectInputCapture,
     PwmPhaseCorrectOutputCompare,
+    ClearOnTimerMatchInputCapture,
+    FastPwmInputCapture,
     FastPwmOutputCompare,
 }
 
 impl WaveformGenerationMode {
-    /// Returns bits for TCCR0A, TCCR0B
+    /// Returns bits for TCCR1A, TCCR1B
     #[inline]
-    fn bits<T: Timer8>(&self) -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+    fn bits<T: Timer16>(&self) -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
         use self::WaveformGenerationMode::*;
 
         // It makes more sense to return bytes (A,B), but the manual
@@ -100,38 +115,48 @@ impl WaveformGenerationMode {
         // inspection purposes and flip the values for sanity
         // purposes.
         let (b, a) = match *self {
-            Normal                         => (Mask::zero(), Mask::zero() | Mask::zero()),
-            PwmPhaseCorrect                => (Mask::zero(), Mask::zero() | T::WGM0),
-            ClearOnTimerMatchOutputCompare => (Mask::zero(), T::WGM1      | Mask::zero()),
-            FastPwm                        => (Mask::zero(), T::WGM1      | T::WGM0),
-            // Reserved                    => (T::WGM2,      Mask::zero() | Mask::zero()),
-            PwmPhaseCorrectOutputCompare   => (T::WGM2,      Mask::zero() | T::WGM0),
-            // Reserved                    => (T::WGM2,      T::WGM1      | Mask::zero())),
-            FastPwmOutputCompare           => (T::WGM2,      T::WGM1      | T::WGM0),
+            Normal                                   => (Mask::zero() | Mask::zero(), Mask::zero() | Mask::zero()),
+            PwmPhaseCorrect8Bit                      => (Mask::zero() | Mask::zero(), Mask::zero() | T::WGM0),
+            PwmPhaseCorrect9Bit                      => (Mask::zero() | Mask::zero(), T::WGM1      | Mask::zero()),
+            PwmPhaseCorrect10Bit                     => (Mask::zero() | Mask::zero(), T::WGM1      | T::WGM0),
+            ClearOnTimerMatchOutputCompare           => (Mask::zero() | T::WGM2,      Mask::zero() | Mask::zero()),
+            FastPwm8Bit                              => (Mask::zero() | T::WGM2,      Mask::zero() | T::WGM0),
+            FastPwm9Bit                              => (Mask::zero() | T::WGM2,      T::WGM1      | Mask::zero()),
+            FastPwm10Bit                             => (Mask::zero() | T::WGM2,      T::WGM1      | T::WGM0),
+            PwmPhaseAndFrequencyCorrectInputCapture  => (T::WGM3      | Mask::zero(), Mask::zero() | Mask::zero()),
+            PwmPhaseAndFrequencyCorrectOutputCompare => (T::WGM3      | Mask::zero(), Mask::zero() | T::WGM0),
+            PwmPhaseCorrectInputCapture              => (T::WGM3      | Mask::zero(), T::WGM1      | Mask::zero()),
+            PwmPhaseCorrectOutputCompare             => (T::WGM3      | Mask::zero(), T::WGM1      | T::WGM0),
+            ClearOnTimerMatchInputCapture            => (T::WGM3      | T::WGM2,      Mask::zero() | Mask::zero()),
+            // Reserved                              => (T::WGM3      | T::WGM2,      Mask::zero() | T::WGM0),
+            FastPwmInputCapture                      => (T::WGM3      | T::WGM2,      T::WGM1      | Mask::zero()),
+            FastPwmOutputCompare                     => (T::WGM3      | T::WGM2,      T::WGM1      | T::WGM0),
         };
 
         (a, b)
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
-        (!(T::WGM0 | T::WGM1), !(T::WGM2))
+    fn mask<T: Timer16>() -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+        (!(T::WGM0 | T::WGM1), !(T::WGM2 | T::WGM3))
     }
 }
 
-pub struct Timer8Setup<T: Timer8> {
+pub struct Timer16Setup<T: Timer16> {
     a: Mask<u8, T::ControlA>,
     b: Mask<u8, T::ControlB>,
-    output_compare_1: Option<u8>,
+    c: Mask<u8, T::ControlC>,
+    output_compare_1: Option<u16>,
     _phantom: marker::PhantomData<T>,
 }
 
-impl<T: Timer8> Timer8Setup<T> {
+impl<T: Timer16> Timer16Setup<T> {
     #[inline]
     pub fn new() -> Self {
-        Timer8Setup {
+        Timer16Setup {
             a: Mask::zero(),
             b: Mask::zero(),
+            c: Mask::zero(),
             output_compare_1: None,
             _phantom: marker::PhantomData,
         }
@@ -158,7 +183,7 @@ impl<T: Timer8> Timer8Setup<T> {
     }
 
     #[inline]
-    pub fn output_compare_1(mut self, value: Option<u8>) -> Self {
+    pub fn output_compare_1(mut self, value: Option<u16>) -> Self {
         self.output_compare_1 = value;
         self
     }
@@ -168,17 +193,18 @@ impl<T: Timer8> Timer8Setup<T> {
         unsafe {
             T::ControlA::write(self.a);
             T::ControlB::write(self.b);
+            T::ControlC::write(self.c);
 
             // Reset counter to zero
-            T::Counter::write(0);
+            T::Counter::write(0u16);
 
             if let Some(v) = self.output_compare_1 {
                 // Set the match
                 T::CompareA::write(v);
 
                 // Enable compare interrupt
-                // FIXME: is this right?
-                T::OCIEA.set_all();
+                // FIXME: uncomment
+                // write_volatile(TIMSK1, OCIE1A);
             }
         }
     }
