@@ -1,4 +1,9 @@
-use {DataDirection, Register};
+use Register;
+
+pub enum DataDirection {
+    Input,
+    Output,
+}
 
 /// An IO pin.
 pub trait Pin {
