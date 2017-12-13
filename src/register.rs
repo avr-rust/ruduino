@@ -1,5 +1,6 @@
 use core::{cmp, convert, marker, ops};
 
+/// A value that a register can store.
 pub trait RegisterValue : Copy + Clone +
                ops::BitAnd<Output=Self> +
                ops::BitAndAssign +
@@ -19,20 +20,20 @@ pub trait Register : Sized {
     type Mask = Mask<Self>;
 
     /// The address of the register.
-    const ADDR: *mut Self::T;
+    const ADDRESS: *mut Self::T;
 
     /// Writes a value to the register.
     #[inline(always)]
     fn write<V>(value: V) where V: Into<Self::T> {
         unsafe {
-            *Self::ADDR = value.into();
+            *Self::ADDRESS = value.into();
         }
     }
 
     /// Reads the value of the register.
     #[inline(always)]
     fn read() -> Self::T {
-        unsafe { *Self::ADDR }
+        unsafe { *Self::ADDRESS }
     }
 
     fn set(mask: Mask<Self>) {
@@ -45,7 +46,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn set_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDR |= mask;
+            *Self::ADDRESS |= mask;
         }
     }
 
@@ -59,7 +60,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn unset_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDR &= !mask;
+            *Self::ADDRESS &= !mask;
         }
     }
 
@@ -73,7 +74,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn toggle_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDR ^= mask;
+            *Self::ADDRESS ^= mask;
         }
     }
 
@@ -87,7 +88,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn is_set_raw(mask: Self::T) -> bool {
         unsafe {
-            (*Self::ADDR & mask) == mask
+            (*Self::ADDRESS & mask) == mask
         }
     }
 
@@ -101,7 +102,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn is_clear_raw(mask: Self::T) -> bool {
         unsafe {
-            (*Self::ADDR & mask) == Self::T::from(0)
+            (*Self::ADDRESS & mask) == Self::T::from(0)
         }
     }
 
