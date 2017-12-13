@@ -60,80 +60,80 @@ pub trait HardwareSpi {
     /// Enables interrupts for the spi module.
     #[inline(always)]
     fn enable_interrupt() {
-        Self::ControlRegister::set_raw(control_register::INTERRUPT_ENABLE);
+        Self::ControlRegister::set_raw(settings::control_register::INTERRUPT_ENABLE);
     }
 
     /// Disables interrupts for the spi module.
     #[inline(always)]
     fn disable_interrupt() {
-        Self::ControlRegister::unset_raw(control_register::INTERRUPT_ENABLE);
+        Self::ControlRegister::unset_raw(settings::control_register::INTERRUPT_ENABLE);
     }
 
     /// Enables the SPI.
     #[inline(always)]
     fn enable() {
-        Self::ControlRegister::set_raw(control_register::ENABLE);
+        Self::ControlRegister::set_raw(settings::control_register::ENABLE);
     }
 
     /// Disables the SPI.
     #[inline(always)]
     fn disable() {
-        Self::ControlRegister::unset_raw(control_register::ENABLE);
+        Self::ControlRegister::unset_raw(settings::control_register::ENABLE);
     }
 
     /// Enables least-significant-bit first.
     #[inline(always)]
     fn set_lsb() {
-        Self::ControlRegister::set_raw(control_register::DATA_ORDER_LSB);
+        Self::ControlRegister::set_raw(settings::control_register::DATA_ORDER_LSB);
     }
 
     /// Enables most-significant-bit first.
     #[inline(always)]
     fn set_msb() {
-        Self::ControlRegister::unset_raw(control_register::DATA_ORDER_LSB);
+        Self::ControlRegister::unset_raw(settings::control_register::DATA_ORDER_LSB);
     }
 
     /// Enables master mode.
     #[inline(always)]
     fn set_master() {
-        Self::ControlRegister::set_raw(control_register::MASTER);
+        Self::ControlRegister::set_raw(settings::control_register::MASTER);
     }
 
     /// Enables slave mode.
     #[inline(always)]
     fn set_slave() {
-        Self::ControlRegister::unset_raw(control_register::MASTER);
+        Self::ControlRegister::unset_raw(settings::control_register::MASTER);
     }
 
     /// Enables double speed mode.
     #[inline(always)]
     fn enable_double_speed() {
-        Self::StatusRegister::set_raw(status_register::SPI2X);
+        Self::StatusRegister::set_raw(settings::status_register::SPI2X);
     }
 
     /// Disables double speed mode.
     #[inline(always)]
     fn disable_double_speed() {
-        Self::StatusRegister::unset_raw(status_register::SPI2X);
+        Self::StatusRegister::unset_raw(settings::status_register::SPI2X);
     }
 
     /// Checks if there is a write collision.
     #[inline(always)]
     fn is_write_collision() -> bool {
-        Self::StatusRegister::is_set_raw(status_register::WCOL)
+        Self::StatusRegister::is_set_raw(settings::status_register::WCOL)
     }
 
     /// Sends a byte through the serial.
     #[inline(always)]
     fn send_byte(byte: u8) {
         Self::DataRegister::write(byte);
-        Self::StatusRegister::wait_until_set_raw(status_register::SPIF);
+        Self::StatusRegister::wait_until_set_raw(settings::status_register::SPIF);
     }
 
     /// Reads a byte from the serial.
     #[inline(always)]
     fn receive_byte() -> u8 {
-        Self::StatusRegister::wait_until_set_raw(status_register::SPIF);
+        Self::StatusRegister::wait_until_set_raw(settings::status_register::SPIF);
         Self::DataRegister::read()
     }
 
@@ -141,34 +141,8 @@ pub trait HardwareSpi {
     #[inline(always)]
     fn send_receive(byte: u8) -> u8 {
         Self::DataRegister::write(byte);
-        Self::StatusRegister::wait_until_set_raw(status_register::SPIF);
+        Self::StatusRegister::wait_until_set_raw(settings::status_register::SPIF);
         Self::DataRegister::read()
     }
-}
-
-/// Constants for the control register.
-pub mod control_register {
-    pub const INTERRUPT_ENABLE: u8 = 1<<7;
-    pub const ENABLE: u8 = 1<<6;
-    pub const DATA_ORDER_LSB: u8 = 1<<5;
-    pub const MASTER: u8 = 1<<4;
-    /// Clock polarity.
-    pub const CPOL: u8 = 1<<3;
-    /// Clock phase.
-    pub const CPHA: u8 = 1<<2;
-    /// Clock rate select 1.
-    pub const SPR1: u8 = 1<<1;
-    /// Clock rate select 2.
-    pub const SPR0: u8 = 1<<0;
-}
-
-/// Constants for the status register.
-pub mod status_register {
-    /// SPI interrupt flag.
-    pub const SPIF: u8 = 1<<7;
-    /// Write collision flag.
-    pub const WCOL: u8 = 1<<6;
-    /// SPI double speed mode.
-    pub const SPI2X: u8 = 1<<0;
 }
 
