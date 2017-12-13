@@ -48,9 +48,11 @@ pub trait Timer16 {
     const WGM0: Mask<u8, Self::ControlA>;
     const WGM1: Mask<u8, Self::ControlA>;
     const WGM2: Mask<u8, Self::ControlB>;
-    const WGM3: Mask<u8, Self::ControlB>; // fixme: right reg?
+    const WGM3: Mask<u8, Self::ControlB>;
 
     const OCIEA: Bitset<u8, Self::InterruptMask>;
+
+    fn setup() -> Timer16Setup<T> { Timer16Setup::new() }
 }
 
 pub enum ClockSource {
@@ -152,7 +154,7 @@ pub struct Timer16Setup<T: Timer16> {
 
 impl<T: Timer16> Timer16Setup<T> {
     #[inline]
-    pub fn new() -> Self {
+    fn new() -> Self {
         Timer16Setup {
             a: Mask::zero(),
             b: Mask::zero(),
@@ -190,22 +192,19 @@ impl<T: Timer16> Timer16Setup<T> {
 
     #[inline]
     pub fn configure(self) {
-        unsafe {
-            T::ControlA::write(self.a);
-            T::ControlB::write(self.b);
-            T::ControlC::write(self.c);
+        T::ControlA::write(self.a);
+        T::ControlB::write(self.b);
+        T::ControlC::write(self.c);
 
-            // Reset counter to zero
-            T::Counter::write(0u16);
+        // Reset counter to zero
+        T::Counter::write(0u16);
 
-            if let Some(v) = self.output_compare_1 {
-                // Set the match
-                T::CompareA::write(v);
+        if let Some(v) = self.output_compare_1 {
+            // Set the match
+            T::CompareA::write(v);
 
-                // Enable compare interrupt
-                // FIXME: uncomment
-                // write_volatile(TIMSK1, OCIE1A);
-            }
+            // Enable compare interrupt
+            T::OCIEA.set_all();
         }
     }
 }

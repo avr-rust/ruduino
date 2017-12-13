@@ -165,21 +165,18 @@ impl<T: Timer8> Timer8Setup<T> {
 
     #[inline]
     pub fn configure(self) {
-        unsafe {
-            T::ControlA::write(self.a);
-            T::ControlB::write(self.b);
+        T::ControlA::write(self.a);
+        T::ControlB::write(self.b);
 
-            // Reset counter to zero
-            T::Counter::write(0);
+        // Reset counter to zero
+        T::Counter::write(0);
 
-            if let Some(v) = self.output_compare_1 {
-                // Set the match
-                T::CompareA::write(v);
+        if let Some(v) = self.output_compare_1 {
+            // Set the match
+            T::CompareA::write(v);
 
-                // Enable compare interrupt
-                // FIXME: is this right?
-                T::OCIEA.set_all();
-            }
+            // Enable compare interrupt
+            T::OCIEA.set_all();
         }
     }
 }
