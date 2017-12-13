@@ -6,6 +6,7 @@ authors = [
   "Jake Goulding <jake.goulding@gmail.com>",
   "Dylan McKay <me@dylanmckay.io>",
 ]
+
 license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/avr-rust/arduino"
@@ -13,6 +14,9 @@ homepage = "https://github.com/avr-rust/arduino"
 description = """
 Reusable components for the Arduino Uno.
 """
+
+build = "core_generator/build.rs"
+
 keywords = ["avr", "arduino", "uno"]
 
 [build-dependencies]
