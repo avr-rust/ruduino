@@ -11,6 +11,7 @@
 
 pub use self::register::{Bitset, Mask, Register, RegisterValue};
 pub use self::pin::Pin;
+pub use self::timer::Timer8;
 pub use self::usart::HardwareUsart;
 
 pub mod prelude;
@@ -25,6 +26,7 @@ pub mod config;
 mod register;
 mod pin;
 mod usart;
+mod timer;
 #[doc(hidden)]
 pub mod std_stub;
 
