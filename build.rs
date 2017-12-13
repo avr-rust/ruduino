@@ -102,7 +102,7 @@ mod gen {
             writeln!(w, "impl {} {{", register.name)?;
             for bitfield in register.bitfields.iter() {
                 // Create a mask for the whole bitset.
-                writeln!(w, "    pub const {}: Bitset<{}, Self> = Bitset::new(0x{:x});", bitfield.name, ty, bitfield.mask)?;
+                writeln!(w, "    pub const {}: Bitset<Self> = Bitset::new(0x{:x});", bitfield.name, bitfield.mask)?;
 
                 // We create masks for the individual bits in the field if there
                 // is more than one bit in the field.
@@ -110,8 +110,8 @@ mod gen {
                 let mut current_mask_bit_num = 0;
                 for current_register_bit_num in 0..15 {
                     if (current_mask & 0b1) == 0b1 {
-                        writeln!(w, "    pub const {}{}: Mask<{}, Self> = Mask::new(1<<{});",
-                                 bitfield.name, current_mask_bit_num, ty, current_register_bit_num)?;
+                        writeln!(w, "    pub const {}{}: Mask<Self> = Mask::new(1<<{});",
+                                 bitfield.name, current_mask_bit_num, current_register_bit_num)?;
                         current_mask_bit_num += 1;
                     }
 
@@ -122,7 +122,8 @@ mod gen {
             writeln!(w, "}}")?;
             writeln!(w)?;
 
-            writeln!(w, "impl Register<{}> for {} {{", ty, register.name)?;
+            writeln!(w, "impl Register for {} {{", register.name)?;
+            writeln!(w, "    type T = {};", ty)?;
             writeln!(w, "    const ADDR: *mut {} = 0x{:x} as *mut {};", ty, register.offset, ty)?;
             writeln!(w, "}}")?;
         }
@@ -266,13 +267,13 @@ mod gen {
             writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
             writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
             writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-            writeln!(w, "    const CS0: Mask<u8, Self::ControlB> = Self::ControlB::CS00;")?;
-            writeln!(w, "    const CS1: Mask<u8, Self::ControlB> = Self::ControlB::CS01;")?;
-            writeln!(w, "    const CS2: Mask<u8, Self::ControlB> = Self::ControlB::CS02;")?;
-            writeln!(w, "    const WGM0: Mask<u8, Self::ControlA> = Self::ControlA::WGM00;")?;
-            writeln!(w, "    const WGM1: Mask<u8, Self::ControlA> = Self::ControlA::WGM01;")?;
-            writeln!(w, "    const WGM2: Mask<u8, Self::ControlB> = Self::ControlB::WGM020;")?;
-            writeln!(w, "    const OCIEA: Bitset<u8, Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
+            writeln!(w, "    const CS0: Mask<Self::ControlB> = Self::ControlB::CS00;")?;
+            writeln!(w, "    const CS1: Mask<Self::ControlB> = Self::ControlB::CS01;")?;
+            writeln!(w, "    const CS2: Mask<Self::ControlB> = Self::ControlB::CS02;")?;
+            writeln!(w, "    const WGM0: Mask<Self::ControlA> = Self::ControlA::WGM00;")?;
+            writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM01;")?;
+            writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM020;")?;
+            writeln!(w, "    const OCIEA: Bitset<Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
             writeln!(w, "}}")?;
         }
 
@@ -300,14 +301,14 @@ mod gen {
             writeln!(w, "    type ControlC = {};", find_reg_suffix("TCCR", "C").name)?;
             writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
             writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-            writeln!(w, "    const CS0: Mask<u8, Self::ControlB> = Self::ControlB::CS10;")?;
-            writeln!(w, "    const CS1: Mask<u8, Self::ControlB> = Self::ControlB::CS11;")?;
-            writeln!(w, "    const CS2: Mask<u8, Self::ControlB> = Self::ControlB::CS12;")?;
-            writeln!(w, "    const WGM0: Mask<u8, Self::ControlA> = Self::ControlA::WGM10;")?;
-            writeln!(w, "    const WGM1: Mask<u8, Self::ControlA> = Self::ControlA::WGM11;")?;
-            writeln!(w, "    const WGM2: Mask<u8, Self::ControlB> = Self::ControlB::WGM10;")?;
-            writeln!(w, "    const WGM3: Mask<u8, Self::ControlB> = Self::ControlB::WGM11;")?;
-            writeln!(w, "    const OCIEA: Bitset<u8, Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
+            writeln!(w, "    const CS0: Mask<Self::ControlB> = Self::ControlB::CS10;")?;
+            writeln!(w, "    const CS1: Mask<Self::ControlB> = Self::ControlB::CS11;")?;
+            writeln!(w, "    const CS2: Mask<Self::ControlB> = Self::ControlB::CS12;")?;
+            writeln!(w, "    const WGM0: Mask<Self::ControlA> = Self::ControlA::WGM10;")?;
+            writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM11;")?;
+            writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM10;")?;
+            writeln!(w, "    const WGM3: Mask<Self::ControlB> = Self::ControlB::WGM11;")?;
+            writeln!(w, "    const OCIEA: Bitset<Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
             writeln!(w, "}}")?;
         }
 

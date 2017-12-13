@@ -3,14 +3,14 @@ use {DataDirection, Register};
 /// An IO pin.
 pub trait Pin {
     /// The associated data direction register.
-    type DDR: Register<u8>;
+    type DDR: Register<T=u8>;
     /// The associated port register.
-    type PORT: Register<u8>;
+    type PORT: Register<T=u8>;
     /// The associated pin register.
     ///
     /// Reads from the register will read input bits.
     /// Writes to the register will toggle bits.
-    type PIN: Register<u8>;
+    type PIN: Register<T=u8>;
     /// The mask of the pin used for accessing registers.
     const MASK: u8;
 

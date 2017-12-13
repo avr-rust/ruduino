@@ -14,11 +14,11 @@ pub trait HardwareSpi {
     type SlaveSelect: Pin;
 
     /// The SPI control register.
-    type ControlRegister: Register<u8>;
+    type ControlRegister: Register<T=u8>;
     /// The SPI status register.
-    type StatusRegister: Register<u8>;
+    type StatusRegister: Register<T=u8>;
     /// The SPI data register.
-    type DataRegister: Register<u8>;
+    type DataRegister: Register<T=u8>;
 
     /// Sets up the SPI as a master.
     fn setup_master(clock: u32) {

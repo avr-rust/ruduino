@@ -2,57 +2,57 @@ use {Bitset, Mask, Register};
 use core::marker;
 
 /// A 16-bit timer.
-pub trait Timer16 {
+pub trait Timer16 : Sized {
     /// The first compare register.
     /// For example, OCR0A.
-    type CompareA: Register<u16>;
+    type CompareA: Register<T=u16>;
 
     /// The second compare register.
     /// For example, OCR0B.
-    type CompareB: Register<u16>;
+    type CompareB: Register<T=u16>;
 
     /// The counter register.
     ///
     /// For example, TCNT0.
-    type Counter: Register<u16>;
+    type Counter: Register<T=u16>;
 
     /// The first control register.
     ///
     /// For example, TCCR0A.
-    type ControlA: Register<u8>;
+    type ControlA: Register<T=u8>;
 
     /// The second control register.
     ///
     /// For example, TCCR0B.
-    type ControlB: Register<u8>;
+    type ControlB: Register<T=u8>;
 
     /// The third control register.
     ///
     /// For example, TCCR0C.
-    type ControlC: Register<u8>;
+    type ControlC: Register<T=u8>;
 
     /// The interrupt mask register.
     ///
     /// For example, TIMSK0.
-    type InterruptMask: Register<u8>;
+    type InterruptMask: Register<T=u8>;
 
     /// The interrupt flag register.
     ///
     /// For example, TIFR0.
-    type InterruptFlag: Register<u8>;
+    type InterruptFlag: Register<T=u8>;
 
-    const CS0: Mask<u8, Self::ControlB>;
-    const CS1: Mask<u8, Self::ControlB>;
-    const CS2: Mask<u8, Self::ControlB>;
+    const CS0: Mask<Self::ControlB>;
+    const CS1: Mask<Self::ControlB>;
+    const CS2: Mask<Self::ControlB>;
 
-    const WGM0: Mask<u8, Self::ControlA>;
-    const WGM1: Mask<u8, Self::ControlA>;
-    const WGM2: Mask<u8, Self::ControlB>;
-    const WGM3: Mask<u8, Self::ControlB>;
+    const WGM0: Mask<Self::ControlA>;
+    const WGM1: Mask<Self::ControlA>;
+    const WGM2: Mask<Self::ControlB>;
+    const WGM3: Mask<Self::ControlB>;
 
-    const OCIEA: Bitset<u8, Self::InterruptMask>;
+    const OCIEA: Bitset<Self::InterruptMask>;
 
-    fn setup() -> Timer16Setup<T> { Timer16Setup::new() }
+    fn setup() -> Timer16Setup<Self> { Timer16Setup::new() }
 }
 
 pub enum ClockSource {
@@ -67,7 +67,7 @@ pub enum ClockSource {
 }
 
 impl ClockSource {
-    fn bits<T: Timer16>(&self) -> Mask<u8, T::ControlB> {
+    fn bits<T: Timer16>(&self) -> Mask<T::ControlB> {
         use self::ClockSource::*;
 
         match *self {
@@ -83,7 +83,7 @@ impl ClockSource {
     }
 
     #[inline]
-    fn mask<T: Timer16>() -> Mask<u8, T::ControlB> {
+    fn mask<T: Timer16>() -> Mask<T::ControlB> {
         !(T::CS2 | T::CS1 | T::CS0)
     }
 }
@@ -109,7 +109,7 @@ pub enum WaveformGenerationMode {
 impl WaveformGenerationMode {
     /// Returns bits for TCCR1A, TCCR1B
     #[inline]
-    fn bits<T: Timer16>(&self) -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+    fn bits<T: Timer16>(&self) -> (Mask<T::ControlA>, Mask<T::ControlB>) {
         use self::WaveformGenerationMode::*;
 
         // It makes more sense to return bytes (A,B), but the manual
@@ -139,15 +139,15 @@ impl WaveformGenerationMode {
     }
 
     #[inline]
-    fn mask<T: Timer16>() -> (Mask<u8, T::ControlA>, Mask<u8, T::ControlB>) {
+    fn mask<T: Timer16>() -> (Mask<T::ControlA>, Mask<T::ControlB>) {
         (!(T::WGM0 | T::WGM1), !(T::WGM2 | T::WGM3))
     }
 }
 
 pub struct Timer16Setup<T: Timer16> {
-    a: Mask<u8, T::ControlA>,
-    b: Mask<u8, T::ControlB>,
-    c: Mask<u8, T::ControlC>,
+    a: Mask<T::ControlA>,
+    b: Mask<T::ControlB>,
+    c: Mask<T::ControlC>,
     output_compare_1: Option<u16>,
     _phantom: marker::PhantomData<T>,
 }

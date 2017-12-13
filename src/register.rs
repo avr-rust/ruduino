@@ -14,15 +14,16 @@ pub trait RegisterValue : Copy + Clone +
 }
 
 /// A register.
-pub trait Register<T: RegisterValue> : Sized {
-    type Mask = Mask<T, Self>;
+pub trait Register : Sized {
+    type T: RegisterValue;
+    type Mask = Mask<Self>;
 
     /// The address of the register.
-    const ADDR: *mut T;
+    const ADDR: *mut Self::T;
 
     /// Writes a value to the register.
     #[inline(always)]
-    fn write<V>(value: V) where V: Into<T> {
+    fn write<V>(value: V) where V: Into<Self::T> {
         unsafe {
             *Self::ADDR = value.into();
         }
@@ -30,11 +31,11 @@ pub trait Register<T: RegisterValue> : Sized {
 
     /// Reads the value of the register.
     #[inline(always)]
-    fn read() -> T {
+    fn read() -> Self::T {
         unsafe { *Self::ADDR }
     }
 
-    fn set(mask: Mask<T, Self>) {
+    fn set(mask: Mask<Self>) {
         Self::set_raw(mask.mask);
     }
 
@@ -42,13 +43,13 @@ pub trait Register<T: RegisterValue> : Sized {
     ///
     /// This is equivalent to `r |= mask`.
     #[inline(always)]
-    fn set_raw(mask: T) {
+    fn set_raw(mask: Self::T) {
         unsafe {
             *Self::ADDR |= mask;
         }
     }
 
-    fn unset(mask: Mask<T, Self>) {
+    fn unset(mask: Mask<Self>) {
         Self::unset_raw(mask.mask);
     }
 
@@ -56,13 +57,13 @@ pub trait Register<T: RegisterValue> : Sized {
     ///
     /// This is equivalent to `r &= !mask`.
     #[inline(always)]
-    fn unset_raw(mask: T) {
+    fn unset_raw(mask: Self::T) {
         unsafe {
             *Self::ADDR &= !mask;
         }
     }
 
-    fn toggle(mask: Mask<T, Self>) {
+    fn toggle(mask: Mask<Self>) {
         Self::toggle_raw(mask.mask);
     }
 
@@ -70,13 +71,13 @@ pub trait Register<T: RegisterValue> : Sized {
     ///
     /// This is equivalent to `r ^= mask`.
     #[inline(always)]
-    fn toggle_raw(mask: T) {
+    fn toggle_raw(mask: Self::T) {
         unsafe {
             *Self::ADDR ^= mask;
         }
     }
 
-    fn is_set(mask: Mask<T, Self>) -> bool {
+    fn is_set(mask: Mask<Self>) -> bool {
         Self::is_set_raw(mask.mask)
     }
 
@@ -84,13 +85,13 @@ pub trait Register<T: RegisterValue> : Sized {
     ///
     /// This is equivalent to `(r & mask) == mask`.
     #[inline(always)]
-    fn is_set_raw(mask: T) -> bool {
+    fn is_set_raw(mask: Self::T) -> bool {
         unsafe {
             (*Self::ADDR & mask) == mask
         }
     }
 
-    fn is_clear(mask: Mask<T, Self>) -> bool {
+    fn is_clear(mask: Mask<Self>) -> bool {
         Self::is_clear_raw(mask.mask)
     }
 
@@ -98,9 +99,9 @@ pub trait Register<T: RegisterValue> : Sized {
     ///
     /// This is equivalent to `(r & mask) == 0`.
     #[inline(always)]
-    fn is_clear_raw(mask: T) -> bool {
+    fn is_clear_raw(mask: Self::T) -> bool {
         unsafe {
-            (*Self::ADDR & mask) == T::from(0)
+            (*Self::ADDR & mask) == Self::T::from(0)
         }
     }
 
@@ -115,35 +116,34 @@ pub trait Register<T: RegisterValue> : Sized {
         }
     }
 
-    fn wait_until_set(mask: Mask<T, Self>) {
+    fn wait_until_set(mask: Mask<Self>) {
         Self::wait_until_set_raw(mask.mask);
     }
 
     /// Waits until a mask is set.
     #[inline(always)]
-    fn wait_until_set_raw(mask: T) {
+    fn wait_until_set_raw(mask: Self::T) {
         Self::wait_until(|| Self::is_set_raw(mask))
     }
 }
 
 /// A register bitmask.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Bitset<T: RegisterValue, R: Register<T>> {
-    mask: T,
+pub struct Bitset<R: Register> {
+    mask: R::T,
     _phantom: marker::PhantomData<R>,
 }
 
 /// A register bitmask.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Mask<T: RegisterValue, R: Register<T>> {
-    mask: T,
+pub struct Mask<R: Register> {
+    mask: R::T,
     _phantom: marker::PhantomData<R>,
 }
 
-impl<T,R> Bitset<T,R>
-    where T: RegisterValue, R: Register<T> {
+impl<R> Bitset<R> where R: Register {
     /// Creates a new register mask.
-    pub const fn new(mask: T) -> Self {
+    pub const fn new(mask: R::T) -> Self {
         Bitset { mask, _phantom: marker::PhantomData }
     }
 
@@ -176,10 +176,9 @@ impl<T,R> Bitset<T,R>
     }
 }
 
-impl<T,R> Mask<T,R>
-    where T: RegisterValue, R: Register<T> {
+impl<R> Mask<R> where R: Register {
     /// Creates a new register mask.
-    pub const fn new(mask: T) -> Self {
+    pub const fn new(mask: R::T) -> Self {
         Mask { mask, _phantom: marker::PhantomData }
     }
 
@@ -188,8 +187,7 @@ impl<T,R> Mask<T,R>
     }
 }
 
-impl<T,R> ops::BitOr for Mask<T,R>
-    where T: RegisterValue, R: Register<T>
+impl<R> ops::BitOr for Mask<R> where R: Register
 {
     type Output = Self;
 
@@ -198,15 +196,13 @@ impl<T,R> ops::BitOr for Mask<T,R>
     }
 }
 
-impl<T,R> ops::BitOrAssign for Mask<T,R>
-    where T: RegisterValue, R: Register<T> {
+impl<R> ops::BitOrAssign for Mask<R> where R: Register {
     fn bitor_assign(&mut self, rhs: Self) {
         self.mask |= rhs.mask;
     }
 }
 
-impl<T,R> ops::BitAnd for Mask<T,R>
-    where T: RegisterValue, R: Register<T>
+impl<R> ops::BitAnd for Mask<R> where R: Register
 {
     type Output = Self;
 
@@ -215,15 +211,13 @@ impl<T,R> ops::BitAnd for Mask<T,R>
     }
 }
 
-impl<T,R> ops::BitAndAssign for Mask<T,R>
-    where T: RegisterValue, R: Register<T> {
+impl<R> ops::BitAndAssign for Mask<R> where R: Register {
     fn bitand_assign(&mut self, rhs: Self) {
         self.mask &= rhs.mask;
     }
 }
 
-impl<T,R> ops::Not for Mask<T,R>
-    where T: RegisterValue, R: Register<T> {
+impl<R> ops::Not for Mask<R> where R: Register {
     type Output = Self;
 
     fn not(self) -> Self {
@@ -231,10 +225,12 @@ impl<T,R> ops::Not for Mask<T,R>
     }
 }
 
-impl<R> Into<u8> for Mask<u8,R> where R: Register<u8> {
-    fn into(self) -> u8 {
-        self.mask
-    }
+impl<R> Into<u8> for Mask<R> where R: Register<T=u8> {
+    fn into(self) -> u8 { self.mask }
+}
+
+impl<R> Into<u16> for Mask<R> where R: Register<T=u16> {
+    fn into(self) -> u16 { self.mask }
 }
 
 impl RegisterValue for u8 { }
