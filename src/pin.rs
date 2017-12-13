@@ -26,13 +26,13 @@ pub trait Pin {
     /// Sets the pin up as an input.
     #[inline(always)]
     fn set_input() {
-        Self::DDR::unset(Self::MASK);
+        Self::DDR::unset_raw(Self::MASK);
     }
 
     /// Sets the pin up as an output.
     #[inline(always)]
     fn set_output() {
-        Self::DDR::set(Self::MASK);
+        Self::DDR::set_raw(Self::MASK);
     }
 
     /// Set the pin to high.
@@ -40,7 +40,7 @@ pub trait Pin {
     /// The pin must be configured as an output.
     #[inline(always)]
     fn set_high() {
-        Self::PORT::set(Self::MASK);
+        Self::PORT::set_raw(Self::MASK);
     }
 
     /// Set the pin to low.
@@ -48,7 +48,7 @@ pub trait Pin {
     /// The pin must be configured as an output.
     #[inline(always)]
     fn set_low() {
-        Self::PORT::unset(Self::MASK);
+        Self::PORT::unset_raw(Self::MASK);
     }
 
     /// Toggles the pin.
@@ -59,7 +59,7 @@ pub trait Pin {
         // FIXME: We can optimise this on post-2006 AVRs.
         // http://www.avrfreaks.net/forum/toggle-state-output-pin
         // set(Self::PIN, Self::MASK);
-        Self::PORT::toggle(Self::MASK);
+        Self::PORT::toggle_raw(Self::MASK);
     }
 
     /// Check if the pin is currently high.
@@ -67,7 +67,7 @@ pub trait Pin {
     /// The pin must be configured as an input.
     #[inline(always)]
     fn is_high() -> bool {
-        Self::PIN::is_set(Self::MASK)
+        Self::PIN::is_set_raw(Self::MASK)
     }
 
     /// Checks if the pin is currently low.
@@ -75,7 +75,7 @@ pub trait Pin {
     /// The pin must be configured as an input.
     #[inline(always)]
     fn is_low() -> bool {
-        Self::PIN::is_clear(Self::MASK)
+        Self::PIN::is_clear_raw(Self::MASK)
     }
 }
 

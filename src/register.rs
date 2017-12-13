@@ -34,51 +34,71 @@ pub trait Register<T: RegisterValue> : Sized {
         unsafe { *Self::ADDR }
     }
 
+    fn set(mask: Mask<T, Self>) {
+        Self::set_raw(mask.mask);
+    }
+
     /// Sets a bitmask in a register.
     ///
     /// This is equivalent to `r |= mask`.
     #[inline(always)]
-    fn set(mask: T) {
+    fn set_raw(mask: T) {
         unsafe {
             *Self::ADDR |= mask;
         }
+    }
+
+    fn unset(mask: Mask<T, Self>) {
+        Self::unset_raw(mask.mask);
     }
 
     /// Clears a bitmask from a register.
     ///
     /// This is equivalent to `r &= !mask`.
     #[inline(always)]
-    fn unset(mask: T) {
+    fn unset_raw(mask: T) {
         unsafe {
             *Self::ADDR &= !mask;
         }
+    }
+
+    fn toggle(mask: Mask<T, Self>) {
+        Self::toggle_raw(mask.mask);
     }
 
     /// Toggles a mask in the register.
     ///
     /// This is equivalent to `r ^= mask`.
     #[inline(always)]
-    fn toggle(mask: T) {
+    fn toggle_raw(mask: T) {
         unsafe {
             *Self::ADDR ^= mask;
         }
+    }
+
+    fn is_set(mask: Mask<T, Self>) -> bool {
+        Self::is_set_raw(mask.mask)
     }
 
     /// Checks if a mask is set in the register.
     ///
     /// This is equivalent to `(r & mask) == mask`.
     #[inline(always)]
-    fn is_set(mask: T) -> bool {
+    fn is_set_raw(mask: T) -> bool {
         unsafe {
             (*Self::ADDR & mask) == mask
         }
+    }
+
+    fn is_clear(mask: Mask<T, Self>) -> bool {
+        Self::is_clear_raw(mask.mask)
     }
 
     /// Checks if a mask is clear in the register.
     ///
     /// This is equivalent to `(r & mask) == 0`.
     #[inline(always)]
-    fn is_clear(mask: T) -> bool {
+    fn is_clear_raw(mask: T) -> bool {
         unsafe {
             (*Self::ADDR & mask) == T::from(0)
         }
@@ -95,10 +115,14 @@ pub trait Register<T: RegisterValue> : Sized {
         }
     }
 
+    fn wait_until_set(mask: Mask<T, Self>) {
+        Self::wait_until_set_raw(mask.mask);
+    }
+
     /// Waits until a mask is set.
     #[inline(always)]
-    fn wait_until_set(mask: T) {
-        Self::wait_until(|| Self::is_set(mask))
+    fn wait_until_set_raw(mask: T) {
+        Self::wait_until(|| Self::is_set_raw(mask))
     }
 }
 
@@ -127,28 +151,28 @@ impl<T,R> Bitset<T,R>
     ///
     /// This is equivalent to `r |= mask`.
     pub fn set_all(self) {
-        R::set(self.mask);
+        R::set_raw(self.mask);
     }
 
     /// Clears the mask from the register.
     ///
     /// This is equivalent to `r &= !mask`.
     pub fn unset_all(self) {
-        R::unset(self.mask);
+        R::unset_raw(self.mask);
     }
 
     /// Toggles the masked bits in the register.
     ///
     /// This is equivalent to `r ^= mask`.
     pub fn toggle_all(self) {
-        R::toggle(self.mask);
+        R::toggle_raw(self.mask);
     }
 
     /// Checks if the mask is clear.
     ///
     /// This is equivalent to `(r & mask) == 0`.
     pub fn is_clear(self) -> bool {
-        R::is_clear(self.mask)
+        R::is_clear_raw(self.mask)
     }
 }
 
