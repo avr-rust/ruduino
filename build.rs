@@ -71,7 +71,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{Mask, Bitset, HardwareUsart, Register}};")?;
+    writeln!(w, "use {{Mask, Bitset, Register}};")?;
     writeln!(w, "use modules;")?;
     writeln!(w)?;
 
@@ -221,7 +221,7 @@ mod gen {
                 writeln!(w, "/// The {} module.", usart.name)?;
                 writeln!(w, "pub struct {};", usart.name)?;
                 writeln!(w)?;
-                writeln!(w, "impl HardwareUsart for {} {{", usart.name)?;
+                writeln!(w, "impl modules::HardwareUsart for {} {{", usart.name)?;
                 for register in usart.registers.iter() {
                     let reg_ty = if register.name.starts_with("UDR") { // the data register.
                         "DataRegister".to_owned()
@@ -273,6 +273,41 @@ mod gen {
             writeln!(w, "    const WGM1: Mask<u8, Self::ControlA> = Self::ControlA::WGM01;")?;
             writeln!(w, "    const WGM2: Mask<u8, Self::ControlB> = Self::ControlB::WGM020;")?;
             writeln!(w, "    const OCIEA: Bitset<u8, Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
+            writeln!(w, "}}")?;
+        }
+
+        if let Some(tc) = mcu.module("TC16") { // Timer/Counter, 16-bit.
+            const TYPE_NAME: &'static str = "Timer16";
+
+            let find_reg = |name: &'static str| {
+                tc.registers().find(|r| r.name.starts_with(name))
+                    .expect(&format!("could not find '{}' register", name))
+            };
+            let find_reg_suffix = |name: &'static str, suffix: &'static str| {
+                tc.registers().find(|r| r.name.starts_with(name) && r.name.ends_with(suffix))
+                    .expect(&format!("could not find '{}' register", name))
+            };
+
+            writeln!(w, "/// 16-bit timer.")?;
+            writeln!(w, "pub struct {};", TYPE_NAME)?;
+            writeln!(w)?;
+            writeln!(w, "impl modules::Timer16 for {} {{", TYPE_NAME)?;
+            writeln!(w, "    type CompareA = {};", find_reg_suffix("OCR", "A").name)?;
+            writeln!(w, "    type CompareB = {};", find_reg_suffix("OCR", "B").name)?;
+            writeln!(w, "    type Counter = {};", find_reg("TCNT").name)?;
+            writeln!(w, "    type ControlA = {};", find_reg_suffix("TCCR", "A").name)?;
+            writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
+            writeln!(w, "    type ControlC = {};", find_reg_suffix("TCCR", "C").name)?;
+            writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
+            writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
+            writeln!(w, "    const CS0: Mask<u8, Self::ControlB> = Self::ControlB::CS10;")?;
+            writeln!(w, "    const CS1: Mask<u8, Self::ControlB> = Self::ControlB::CS11;")?;
+            writeln!(w, "    const CS2: Mask<u8, Self::ControlB> = Self::ControlB::CS12;")?;
+            writeln!(w, "    const WGM0: Mask<u8, Self::ControlA> = Self::ControlA::WGM10;")?;
+            writeln!(w, "    const WGM1: Mask<u8, Self::ControlA> = Self::ControlA::WGM11;")?;
+            writeln!(w, "    const WGM2: Mask<u8, Self::ControlB> = Self::ControlB::WGM10;")?;
+            writeln!(w, "    const WGM3: Mask<u8, Self::ControlB> = Self::ControlB::WGM11;")?;
+            writeln!(w, "    const OCIEA: Bitset<u8, Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
             writeln!(w, "}}")?;
         }
 

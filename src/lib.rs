@@ -15,7 +15,6 @@
 
 pub use self::register::{Bitset, Mask, Register, RegisterValue};
 pub use self::pin::Pin;
-pub use self::usart::HardwareUsart;
 
 pub mod prelude;
 pub mod serial;
@@ -26,7 +25,6 @@ pub mod config;
 
 mod register;
 mod pin;
-mod usart;
 #[doc(hidden)]
 pub mod std_stub;
 
