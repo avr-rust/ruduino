@@ -1,8 +1,0 @@
-[dependencies.std]
-features = ["panic_unwind"]
-
-[dependencies.test]
-stage = 1
-
-[target.avr-atmega328p.dependencies]
-core = { git = "https://github.com/avr-rust/libcore", branch = "rust-26015da0" }
