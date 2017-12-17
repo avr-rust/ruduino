@@ -36,14 +36,21 @@ pub trait Timer8 : Sized {
     /// For example, TIFR0.
     type InterruptFlag: Register<T=u8>;
 
+    /// Bit 0 of the clock select mask.
     const CS0: Mask<Self::ControlB>;
+    /// Bit 1 of the clock select mask.
     const CS1: Mask<Self::ControlB>;
+    /// Bit 2 of the clock select mask.
     const CS2: Mask<Self::ControlB>;
 
+    /// Bit 0 of the waveform generation mode mask.
     const WGM0: Mask<Self::ControlA>;
+    /// Bit 1 of the waveform generation mode mask.
     const WGM1: Mask<Self::ControlA>;
+    /// Bit 2 of the waveform generation mode mask.
     const WGM2: Mask<Self::ControlB>;
 
+    /// Output compare interrupt enable flag.
     const OCIEA: Mask<Self::InterruptMask>;
 }
 
