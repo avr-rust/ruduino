@@ -73,7 +73,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{Mask, Bitset, Register}};")?;
+    writeln!(w, "use {{Mask, Register}};")?;
     writeln!(w, "use modules;")?;
     writeln!(w)?;
 

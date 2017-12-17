@@ -1,4 +1,4 @@
-use {Bitset, Mask, Register};
+use {Mask, Register};
 use core::marker;
 
 /// A 8-bit timer.
@@ -44,7 +44,7 @@ pub trait Timer8 : Sized {
     const WGM1: Mask<Self::ControlA>;
     const WGM2: Mask<Self::ControlB>;
 
-    const OCIEA: Bitset<Self::InterruptMask>;
+    const OCIEA: Mask<Self::InterruptMask>;
 }
 
 pub enum ClockSource {
@@ -176,7 +176,7 @@ impl<T: Timer8> Timer8Setup<T> {
             T::CompareA::write(v);
 
             // Enable compare interrupt
-            T::OCIEA.set_all();
+            T::InterruptMask::set(T::OCIEA);
         }
     }
 }

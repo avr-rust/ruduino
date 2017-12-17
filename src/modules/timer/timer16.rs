@@ -1,4 +1,4 @@
-use {Bitset, Mask, Register};
+use {Mask, Register};
 use core::marker;
 
 /// A 16-bit timer.
@@ -50,7 +50,7 @@ pub trait Timer16 : Sized {
     const WGM2: Mask<Self::ControlB>;
     const WGM3: Mask<Self::ControlB>;
 
-    const OCIEA: Bitset<Self::InterruptMask>;
+    const OCIEA: Mask<Self::InterruptMask>;
 
     fn setup() -> Timer16Setup<Self> { Timer16Setup::new() }
 }
@@ -204,7 +204,7 @@ impl<T: Timer16> Timer16Setup<T> {
             T::CompareA::write(v);
 
             // Enable compare interrupt
-            T::OCIEA.set_all();
+            T::InterruptMask::set(T::OCIEA);
         }
     }
 }
