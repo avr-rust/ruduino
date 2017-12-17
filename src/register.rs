@@ -130,51 +130,9 @@ pub trait Register : Sized {
 
 /// A register bitmask.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Bitset<R: Register> {
-    mask: R::T,
-    _phantom: marker::PhantomData<R>,
-}
-
-/// A register bitmask.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Mask<R: Register> {
     mask: R::T,
     _phantom: marker::PhantomData<R>,
-}
-
-impl<R> Bitset<R> where R: Register {
-    /// Creates a new register mask.
-    pub const fn new(mask: R::T) -> Self {
-        Bitset { mask, _phantom: marker::PhantomData }
-    }
-
-    /// Sets the mask in the register.
-    ///
-    /// This is equivalent to `r |= mask`.
-    pub fn set_all(self) {
-        R::set_raw(self.mask);
-    }
-
-    /// Clears the mask from the register.
-    ///
-    /// This is equivalent to `r &= !mask`.
-    pub fn unset_all(self) {
-        R::unset_raw(self.mask);
-    }
-
-    /// Toggles the masked bits in the register.
-    ///
-    /// This is equivalent to `r ^= mask`.
-    pub fn toggle_all(self) {
-        R::toggle_raw(self.mask);
-    }
-
-    /// Checks if the mask is clear.
-    ///
-    /// This is equivalent to `(r & mask) == 0`.
-    pub fn is_clear(self) -> bool {
-        R::is_clear_raw(self.mask)
-    }
 }
 
 impl<R> Mask<R> where R: Register {

@@ -15,7 +15,7 @@ pub fn write_registers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         writeln!(w, "impl {} {{", register.name)?;
         for bitfield in register.bitfields.iter() {
             // Create a mask for the whole bitset.
-            writeln!(w, "    pub const {}: Bitset<Self> = Bitset::new(0x{:x});", bitfield.name, bitfield.mask)?;
+            writeln!(w, "    pub const {}: Mask<Self> = Mask::new(0x{:x});", bitfield.name, bitfield.mask)?;
 
             // We create masks for the individual bits in the field if there
             // is more than one bit in the field.
@@ -186,7 +186,7 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         writeln!(w, "    const WGM0: Mask<Self::ControlA> = Self::ControlA::WGM00;")?;
         writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM01;")?;
         writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM020;")?;
-        writeln!(w, "    const OCIEA: Bitset<Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
+        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
         writeln!(w, "}}")?;
     }
 
@@ -221,7 +221,7 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM11;")?;
         writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM10;")?;
         writeln!(w, "    const WGM3: Mask<Self::ControlB> = Self::ControlB::WGM11;")?;
-        writeln!(w, "    const OCIEA: Bitset<Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
+        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
         writeln!(w, "}}")?;
     }
 
