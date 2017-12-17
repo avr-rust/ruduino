@@ -168,6 +168,8 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
             tc.registers().find(|r| r.name.starts_with(name) && r.name.ends_with(suffix))
                 .expect(&format!("could not find '{}' register", name))
         };
+        let timer_number = find_reg("TIMSK").name.chars().last().unwrap()
+            .to_digit(10).unwrap();
 
         writeln!(w, "/// 8-bit timer.")?;
         writeln!(w, "pub struct {};", TYPE_NAME)?;
@@ -186,7 +188,7 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         writeln!(w, "    const WGM0: Mask<Self::ControlA> = Self::ControlA::WGM00;")?;
         writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM01;")?;
         writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM020;")?;
-        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE0A;")?;
+        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
         writeln!(w, "}}")?;
     }
 
@@ -201,6 +203,8 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
             tc.registers().find(|r| r.name.starts_with(name) && r.name.ends_with(suffix))
                 .expect(&format!("could not find '{}' register", name))
         };
+        let timer_number = find_reg("TIMSK").name.chars().last().unwrap()
+            .to_digit(10).unwrap();
 
         writeln!(w, "/// 16-bit timer.")?;
         writeln!(w, "pub struct {};", TYPE_NAME)?;
@@ -221,7 +225,7 @@ pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
         writeln!(w, "    const WGM1: Mask<Self::ControlA> = Self::ControlA::WGM11;")?;
         writeln!(w, "    const WGM2: Mask<Self::ControlB> = Self::ControlB::WGM10;")?;
         writeln!(w, "    const WGM3: Mask<Self::ControlB> = Self::ControlB::WGM11;")?;
-        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE1A;")?;
+        writeln!(w, "    const OCIEA: Mask<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
         writeln!(w, "}}")?;
     }
 
