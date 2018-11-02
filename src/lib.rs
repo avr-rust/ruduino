@@ -3,7 +3,6 @@
 #![feature(asm)]
 #![feature(no_core)]
 #![feature(const_fn)]
-#![feature(associated_consts)]
 
 #![no_core]
 
