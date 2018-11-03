@@ -7,8 +7,8 @@ This library provides a set of reusable components for the Arduino Uno.
 ### Register and bit definitions
 
 ```rust
-use arduino::PORTB; // Register
-use arduino::PORTB7; // Pin
+use ruduino::PORTB; // Register
+use ruduino::PORTB7; // Pin
 ```
 
 ### Prelude
