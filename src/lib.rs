@@ -8,43 +8,10 @@
 
 extern crate core;
 
-// Look like we have a standard library
-#[allow(unused_imports)]
-use core::{option, iter, fmt, ops, clone, marker};
-
 pub mod prelude;
 pub mod timer0;
 pub mod timer1;
 pub mod serial;
-pub mod io;
-
-#[derive(Copy, Clone)]
-pub enum Bit {
-    Bit0 = 0,
-    Bit1 = 1,
-    Bit2 = 2,
-    Bit3 = 3,
-    Bit4 = 4,
-    Bit5 = 5,
-    Bit6 = 6,
-    Bit7 = 7,
-}
-
-impl Bit {
-    fn as_mask(&self) -> u8 { 1 << *self as u8 }
-
-    pub fn is_set(&self, value: u8) -> bool {
-        (value & self.as_mask()) != 0
-    }
-
-    pub fn set(&self, value: u8) -> u8 {
-        value | self.as_mask()
-    }
-
-    pub fn unset(&self, value: u8) -> u8 {
-        value & !self.as_mask()
-    }
-}
 
 macro_rules! bit {
     (-, $pos:expr) => {};

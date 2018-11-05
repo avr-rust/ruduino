@@ -1,8 +1,6 @@
 use core::prelude::v1::*;
 use core::marker::PhantomData;
 
-pub use io::{PORT_B, PORT_C, PORT_D};
-
 pub struct DisableInterrupts(PhantomData<()>);
 
 impl DisableInterrupts {
