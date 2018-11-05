@@ -2,12 +2,12 @@
 
 #![feature(asm)]
 #![feature(const_fn)]
-#![feature(associated_consts)]
 #![feature(associated_type_defaults)]
-#![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(panic_handler)]
 #![feature(unwind_attributes)]
+
+#![no_std]
 
 pub use self::register::{Register, RegisterBits, RegisterValue};
 pub use self::pin::{DataDirection, Pin};
