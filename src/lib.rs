@@ -19,9 +19,12 @@ pub use self::pin::{DataDirection, Pin};
 
 pub mod prelude;
 pub mod legacy;
+/// Low level register-based API for device-specific operations.
 pub mod cores;
+pub mod interrupt;
 pub mod modules;
 
+/// Configuration for the currently-targeted microcontroller.
 pub mod config;
 
 mod register;

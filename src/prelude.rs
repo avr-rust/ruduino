@@ -1,26 +1,4 @@
-use core::prelude::v1::*;
-use core::marker::PhantomData;
+//! Re-exports commonly-used APIs that can be imported at once.
 
-pub struct DisableInterrupts(PhantomData<()>);
+pub use interrupt::without_interrupts;
 
-impl DisableInterrupts {
-    #[inline]
-    pub fn new() -> DisableInterrupts {
-        unsafe { asm!("CLI") }
-        DisableInterrupts(PhantomData)
-    }
-}
-
-impl Drop for DisableInterrupts {
-    #[inline]
-    fn drop(&mut self) {
-        unsafe { asm!("SEI") }
-    }
-}
-
-pub fn without_interrupts<F, T>(f: F) -> T
-    where F: FnOnce() -> T
-{
-    let _disabled = DisableInterrupts::new();
-    f()
-}

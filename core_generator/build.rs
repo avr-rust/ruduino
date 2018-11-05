@@ -66,7 +66,6 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
     let path = cores_path().join("mod.rs");
     let mut w = File::create(&path)?;
 
-    writeln!(w, "//! Cores")?;
     writeln!(w)?;
     for mcu in mcus {
         let module_name = core_module_name(mcu);
