@@ -12,6 +12,8 @@ use std::path::{Path, PathBuf};
 /// archicectures that are not AVR.
 const DEFAULT_MCU_FOR_NON_AVR_DOCS: &'static str = "atmega328";
 
+const DEFAULT_FREQUENCY_HZ_FOR_NON_AVR_DOCS: &'static str = "16_000_000";
+
 fn src_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("src")
 }
@@ -51,7 +53,11 @@ fn generate_config_module() -> Result<(), io::Error> {
     let path = src_path().join("config.rs");
     let mut f = File::create(&path)?;
 
-    let clock = env!("AVR_CPU_FREQUENCY_HZ");
+    let clock = if cfg!(arch = "avr") {
+        env!("AVR_CPU_FREQUENCY_HZ")
+    } else {
+        DEFAULT_FREQUENCY_HZ_FOR_NON_AVR_DOCS
+    };
     writeln!(f, "/// The clock frequency of device being targeted in Hertz.")?;
     writeln!(f, "pub const CPU_FREQUENCY_HZ: u32 = {};", clock)?;
     Ok(())
