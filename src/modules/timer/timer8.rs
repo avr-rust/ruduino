@@ -1,4 +1,4 @@
-use {Mask, Register};
+use {RegisterBits, Register};
 use core::marker;
 
 /// A 8-bit timer.
@@ -37,21 +37,21 @@ pub trait Timer8 : Sized {
     type InterruptFlag: Register<T=u8>;
 
     /// Bit 0 of the clock select mask.
-    const CS0: Mask<Self::ControlB>;
+    const CS0: RegisterBits<Self::ControlB>;
     /// Bit 1 of the clock select mask.
-    const CS1: Mask<Self::ControlB>;
+    const CS1: RegisterBits<Self::ControlB>;
     /// Bit 2 of the clock select mask.
-    const CS2: Mask<Self::ControlB>;
+    const CS2: RegisterBits<Self::ControlB>;
 
     /// Bit 0 of the waveform generation mode mask.
-    const WGM0: Mask<Self::ControlA>;
+    const WGM0: RegisterBits<Self::ControlA>;
     /// Bit 1 of the waveform generation mode mask.
-    const WGM1: Mask<Self::ControlA>;
+    const WGM1: RegisterBits<Self::ControlA>;
     /// Bit 2 of the waveform generation mode mask.
-    const WGM2: Mask<Self::ControlB>;
+    const WGM2: RegisterBits<Self::ControlB>;
 
     /// Output compare interrupt enable flag.
-    const OCIEA: Mask<Self::InterruptMask>;
+    const OCIEA: RegisterBits<Self::InterruptMask>;
 }
 
 pub enum ClockSource {
@@ -66,23 +66,23 @@ pub enum ClockSource {
 }
 
 impl ClockSource {
-    fn bits<T: Timer8>(&self) -> Mask<T::ControlB> {
+    fn bits<T: Timer8>(&self) -> RegisterBits<T::ControlB> {
         use self::ClockSource::*;
 
         match *self {
-            None            => Mask::zero() | Mask::zero() | Mask::zero(),
-            Prescale1       => Mask::zero() | Mask::zero() | T::CS0,
-            Prescale8       => Mask::zero() | T::CS1       | Mask::zero(),
-            Prescale64      => Mask::zero() | T::CS1       | T::CS0,
-            Prescale256     => T::CS2       | Mask::zero() | Mask::zero(),
-            Prescale1024    => T::CS2       | Mask::zero() | T::CS0,
-            ExternalFalling => T::CS2       | T::CS1       | Mask::zero(),
+            None            => RegisterBits::zero() | RegisterBits::zero() | RegisterBits::zero(),
+            Prescale1       => RegisterBits::zero() | RegisterBits::zero() | T::CS0,
+            Prescale8       => RegisterBits::zero() | T::CS1       | RegisterBits::zero(),
+            Prescale64      => RegisterBits::zero() | T::CS1       | T::CS0,
+            Prescale256     => T::CS2       | RegisterBits::zero() | RegisterBits::zero(),
+            Prescale1024    => T::CS2       | RegisterBits::zero() | T::CS0,
+            ExternalFalling => T::CS2       | T::CS1       | RegisterBits::zero(),
             ExternalRising  => T::CS2       | T::CS1       | T::CS0,
         }
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> Mask<T::ControlB> {
+    fn mask<T: Timer8>() -> RegisterBits<T::ControlB> {
         !(T::CS2 | T::CS1 | T::CS0)
     }
 }
@@ -99,7 +99,7 @@ pub enum WaveformGenerationMode {
 impl WaveformGenerationMode {
     /// Returns bits for TCCR0A, TCCR0B
     #[inline]
-    fn bits<T: Timer8>(&self) -> (Mask<T::ControlA>, Mask<T::ControlB>) {
+    fn bits<T: Timer8>(&self) -> (RegisterBits<T::ControlA>, RegisterBits<T::ControlB>) {
         use self::WaveformGenerationMode::*;
 
         // It makes more sense to return bytes (A,B), but the manual
@@ -107,13 +107,13 @@ impl WaveformGenerationMode {
         // inspection purposes and flip the values for sanity
         // purposes.
         let (b, a) = match *self {
-            Normal                         => (Mask::zero(), Mask::zero() | Mask::zero()),
-            PwmPhaseCorrect                => (Mask::zero(), Mask::zero() | T::WGM0),
-            ClearOnTimerMatchOutputCompare => (Mask::zero(), T::WGM1      | Mask::zero()),
-            FastPwm                        => (Mask::zero(), T::WGM1      | T::WGM0),
-            // Reserved                    => (T::WGM2,      Mask::zero() | Mask::zero()),
-            PwmPhaseCorrectOutputCompare   => (T::WGM2,      Mask::zero() | T::WGM0),
-            // Reserved                    => (T::WGM2,      T::WGM1      | Mask::zero())),
+            Normal                         => (RegisterBits::zero(), RegisterBits::zero() | RegisterBits::zero()),
+            PwmPhaseCorrect                => (RegisterBits::zero(), RegisterBits::zero() | T::WGM0),
+            ClearOnTimerMatchOutputCompare => (RegisterBits::zero(), T::WGM1      | RegisterBits::zero()),
+            FastPwm                        => (RegisterBits::zero(), T::WGM1      | T::WGM0),
+            // Reserved                    => (T::WGM2,      RegisterBits::zero() | RegisterBits::zero()),
+            PwmPhaseCorrectOutputCompare   => (T::WGM2,      RegisterBits::zero() | T::WGM0),
+            // Reserved                    => (T::WGM2,      T::WGM1      | RegisterBits::zero())),
             FastPwmOutputCompare           => (T::WGM2,      T::WGM1      | T::WGM0),
         };
 
@@ -121,14 +121,14 @@ impl WaveformGenerationMode {
     }
 
     #[inline]
-    fn mask<T: Timer8>() -> (Mask<T::ControlA>, Mask<T::ControlB>) {
+    fn mask<T: Timer8>() -> (RegisterBits<T::ControlA>, RegisterBits<T::ControlB>) {
         (!(T::WGM0 | T::WGM1), !(T::WGM2))
     }
 }
 
 pub struct Timer8Setup<T: Timer8> {
-    a: Mask<T::ControlA>,
-    b: Mask<T::ControlB>,
+    a: RegisterBits<T::ControlA>,
+    b: RegisterBits<T::ControlB>,
     output_compare_1: Option<u8>,
     _phantom: marker::PhantomData<T>,
 }
@@ -137,8 +137,8 @@ impl<T: Timer8> Timer8Setup<T> {
     #[inline]
     pub fn new() -> Self {
         Timer8Setup {
-            a: Mask::zero(),
-            b: Mask::zero(),
+            a: RegisterBits::zero(),
+            b: RegisterBits::zero(),
             output_compare_1: None,
             _phantom: marker::PhantomData,
         }

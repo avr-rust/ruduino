@@ -52,6 +52,7 @@ fn generate_config_module() -> Result<(), io::Error> {
     let mut f = File::create(&path)?;
 
     let clock = env!("AVR_CPU_FREQUENCY_HZ");
+    writeln!(f, "/// The clock frequency of device being targeted in Hertz.")?;
     writeln!(f, "pub const CPU_FREQUENCY_HZ: u32 = {};", clock)?;
     Ok(())
 }
@@ -81,7 +82,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{Mask, Register}};")?;
+    writeln!(w, "use {{RegisterBits, Register}};")?;
     writeln!(w, "use modules;")?;
     writeln!(w)?;
 

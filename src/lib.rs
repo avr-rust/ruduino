@@ -14,7 +14,7 @@
 
 #![no_std]
 
-pub use self::register::{Mask, Register, RegisterValue};
+pub use self::register::{Register, RegisterBits, RegisterValue};
 pub use self::pin::{DataDirection, Pin};
 
 pub mod prelude;

@@ -1,6 +1,8 @@
 use core::{cmp, convert, marker, ops};
 
 /// A value that a register can store.
+///
+/// All registers are either `u8` or `u16`.
 pub trait RegisterValue : Copy + Clone +
                ops::BitAnd<Output=Self> +
                ops::BitAndAssign +
@@ -16,8 +18,11 @@ pub trait RegisterValue : Copy + Clone +
 
 /// A register.
 pub trait Register : Sized {
+    /// The type that can represent the value of the register.
     type T: RegisterValue;
-    type Mask = Mask<Self>;
+    /// The type representing a set of bits that may be manipulated
+    /// within the register.
+    type RegisterBits = RegisterBits<Self>;
 
     /// The address of the register.
     const ADDRESS: *mut Self::T;
@@ -36,35 +41,44 @@ pub trait Register : Sized {
         unsafe { *Self::ADDRESS }
     }
 
-    fn set(mask: Mask<Self>) {
-        Self::set_raw(mask.mask);
+    /// Sets a set of bits to `1` in the register.
+    fn set(bits: RegisterBits<Self>) {
+        Self::set_mask_raw(bits.mask);
     }
 
     /// Sets a bitmask in a register.
     ///
     /// This is equivalent to `r |= mask`.
     #[inline(always)]
-    fn set_raw(mask: Self::T) {
+    fn set_mask_raw(mask: Self::T) {
         unsafe {
             *Self::ADDRESS |= mask;
         }
     }
 
-    fn unset(mask: Mask<Self>) {
-        Self::unset_raw(mask.mask);
+    /// Unsets a set of bits in the register.
+    ///
+    /// All of the bits will be set to `0`.
+    fn unset(bits: RegisterBits<Self>) {
+        Self::unset_mask_raw(bits.mask);
     }
 
     /// Clears a bitmask from a register.
     ///
     /// This is equivalent to `r &= !mask`.
     #[inline(always)]
-    fn unset_raw(mask: Self::T) {
+    fn unset_mask_raw(mask: Self::T) {
         unsafe {
             *Self::ADDRESS &= !mask;
         }
     }
 
-    fn toggle(mask: Mask<Self>) {
+    /// Toggles a set of bits within the register.
+    ///
+    /// All specified bits which were previously `0` will become
+    /// `1`, and all specified bits that were previous `1` will
+    /// become `0`.
+    fn toggle(mask: RegisterBits<Self>) {
         Self::toggle_raw(mask.mask);
     }
 
@@ -78,21 +92,29 @@ pub trait Register : Sized {
         }
     }
 
-    fn is_set(mask: Mask<Self>) -> bool {
-        Self::is_set_raw(mask.mask)
+    /// Checks if a set of bits are enabled.
+    ///
+    /// All specifed bits must be set for this function
+    /// to return `true`.
+    fn is_set(bits: RegisterBits<Self>) -> bool {
+        Self::is_mask_set_raw(bits.mask)
     }
 
     /// Checks if a mask is set in the register.
     ///
     /// This is equivalent to `(r & mask) == mask`.
     #[inline(always)]
-    fn is_set_raw(mask: Self::T) -> bool {
+    fn is_mask_set_raw(mask: Self::T) -> bool {
         unsafe {
             (*Self::ADDRESS & mask) == mask
         }
     }
 
-    fn is_clear(mask: Mask<Self>) -> bool {
+    /// Checks if a set of bits are not set.
+    ///
+    /// All specified bits must be `0` for this
+    /// function to return `true`.
+    fn is_clear(mask: RegisterBits<Self>) -> bool {
         Self::is_clear_raw(mask.mask)
     }
 
@@ -106,92 +128,100 @@ pub trait Register : Sized {
         }
     }
 
-    /// Waits until some condition is true of the register.
-    #[inline(always)]
-    fn wait_until<F>(mut f: F)
-        where F: FnMut() -> bool {
-        loop {
-            if f() {
-                break;
-            }
-        }
+    /// Waits until a set of bits are set in the register.
+    ///
+    /// This function will block until all bits that are set in
+    /// the mask are also set in the register.
+    fn wait_until_set(bits: RegisterBits<Self>) {
+        Self::wait_until_mask_set_raw(bits.mask);
     }
 
-    fn wait_until_set(mask: Mask<Self>) {
-        Self::wait_until_set_raw(mask.mask);
-    }
-
-    /// Waits until a mask is set.
+    /// Waits until a bit mask is set in the register.
+    ///
+    /// This function will block until all bits that are set in
+    /// the mask are also set in the register.
     #[inline(always)]
-    fn wait_until_set_raw(mask: Self::T) {
-        Self::wait_until(|| Self::is_set_raw(mask))
+    fn wait_until_mask_set_raw(mask: Self::T) {
+        wait_until(|| Self::is_mask_set_raw(mask))
     }
 }
 
-/// A register bitmask.
+/// Represents a set of bits within a specific register.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Mask<R: Register> {
+pub struct RegisterBits<R: Register> {
+    /// The raw bitmask.
     mask: R::T,
     _phantom: marker::PhantomData<R>,
 }
 
-impl<R> Mask<R> where R: Register {
+impl<R> RegisterBits<R> where R: Register {
     /// Creates a new register mask.
     pub const fn new(mask: R::T) -> Self {
-        Mask { mask, _phantom: marker::PhantomData }
+        RegisterBits { mask, _phantom: marker::PhantomData }
     }
 
     pub fn zero() -> Self {
-        Mask::new(0u8.into())
+        RegisterBits::new(0u8.into())
     }
 }
 
-impl<R> ops::BitOr for Mask<R> where R: Register
+impl<R> ops::BitOr for RegisterBits<R> where R: Register
 {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self {
-        Mask::new(self.mask | rhs.mask)
+        RegisterBits::new(self.mask | rhs.mask)
     }
 }
 
-impl<R> ops::BitOrAssign for Mask<R> where R: Register {
+impl<R> ops::BitOrAssign for RegisterBits<R> where R: Register {
     fn bitor_assign(&mut self, rhs: Self) {
         self.mask |= rhs.mask;
     }
 }
 
-impl<R> ops::BitAnd for Mask<R> where R: Register
+impl<R> ops::BitAnd for RegisterBits<R> where R: Register
 {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self {
-        Mask::new(self.mask & rhs.mask)
+        RegisterBits::new(self.mask & rhs.mask)
     }
 }
 
-impl<R> ops::BitAndAssign for Mask<R> where R: Register {
+impl<R> ops::BitAndAssign for RegisterBits<R> where R: Register {
     fn bitand_assign(&mut self, rhs: Self) {
         self.mask &= rhs.mask;
     }
 }
 
-impl<R> ops::Not for Mask<R> where R: Register {
+impl<R> ops::Not for RegisterBits<R> where R: Register {
     type Output = Self;
 
     fn not(self) -> Self {
-        Mask::new(!self.mask)
+        RegisterBits::new(!self.mask)
     }
 }
 
-impl<R> Into<u8> for Mask<R> where R: Register<T=u8> {
+impl<R> Into<u8> for RegisterBits<R> where R: Register<T=u8> {
     fn into(self) -> u8 { self.mask }
 }
 
-impl<R> Into<u16> for Mask<R> where R: Register<T=u16> {
+impl<R> Into<u16> for RegisterBits<R> where R: Register<T=u16> {
     fn into(self) -> u16 { self.mask }
 }
 
 impl RegisterValue for u8 { }
 impl RegisterValue for u16 { }
+
+/// Waits until some condition is true of the register.
+#[inline(always)]
+fn wait_until<F>(mut f: F)
+    where F: FnMut() -> bool {
+    loop {
+        if f() {
+            break;
+        }
+    }
+}
 
