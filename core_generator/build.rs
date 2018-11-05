@@ -42,8 +42,8 @@ fn generate_config_module() -> Result<(), io::Error> {
     let path = src_path().join("config.rs");
     let mut f = File::create(&path)?;
 
-    let clock = env!("AVR_CPU_FREQUENCY");
-    writeln!(f, "pub const CPU_FREQUENCY: u32 = {};", clock)?;
+    let clock = env!("AVR_CPU_FREQUENCY_HZ");
+    writeln!(f, "pub const CPU_FREQUENCY_HZ: u32 = {};", clock)?;
     Ok(())
 }
 

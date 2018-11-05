@@ -19,17 +19,17 @@ pub struct ClockMask(pub u8);
 impl ClockMask {
     /// Gets the clock mask for a specific baute rate.
     pub fn with_clock(spi_clock: u32) -> ClockMask {
-        let mut divider_bits = if spi_clock >= config::CPU_FREQUENCY / 2 {
+        let mut divider_bits = if spi_clock >= config::CPU_FREQUENCY_HZ / 2 {
             0
-        } else if spi_clock >= config::CPU_FREQUENCY / 4 {
+        } else if spi_clock >= config::CPU_FREQUENCY_HZ / 4 {
             1
-        } else if spi_clock >= config::CPU_FREQUENCY / 8 {
+        } else if spi_clock >= config::CPU_FREQUENCY_HZ / 8 {
             2
-        } else if spi_clock >= config::CPU_FREQUENCY / 16 {
+        } else if spi_clock >= config::CPU_FREQUENCY_HZ / 16 {
             3
-        } else if spi_clock >= config::CPU_FREQUENCY / 32 {
+        } else if spi_clock >= config::CPU_FREQUENCY_HZ / 32 {
             4
-        } else if spi_clock >= config::CPU_FREQUENCY / 64 {
+        } else if spi_clock >= config::CPU_FREQUENCY_HZ / 64 {
             5
         } else {
             6
