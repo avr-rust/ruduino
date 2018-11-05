@@ -8,6 +8,10 @@ use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
+/// The MCU that will be assumed when running 'cargo doc' targeting
+/// archicectures that are not AVR.
+const DEFAULT_MCU_FOR_NON_AVR_DOCS: &'static str = "atmega328";
+
 fn src_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("src")
 }
@@ -25,8 +29,13 @@ fn main() {
         fs::create_dir_all(&cores_path()).expect("could not create cores directory");
     }
 
-    let current_mcu = avr_mcu::current::mcu()
-        .expect("no target cpu specified");
+    let current_mcu = if cfg!(arch = "avr") {
+        avr_mcu::current::mcu()
+            .expect("no target cpu specified")
+    } else {
+        avr_mcu::microcontroller(DEFAULT_MCU_FOR_NON_AVR_DOCS)
+    };
+
     generate_config_module().unwrap();
     generate_cores(&[current_mcu]).unwrap();
 }
