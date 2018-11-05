@@ -7,6 +7,7 @@
 #![feature(associated_type_defaults)]
 #![feature(const_fn)]
 #![feature(lang_items)]
+#![feature(panic_handler)]
 #![feature(unwind_attributes)]
 
 #![no_core]
