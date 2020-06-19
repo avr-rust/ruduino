@@ -1,6 +1,6 @@
 //! Definitions of register addresses and bits within those registers
 
-#![feature(asm)]
+#![feature(llvm_asm)]
 #![feature(const_fn)]
 #![feature(associated_type_defaults)]
 #![feature(lang_items)]
