@@ -1,4 +1,4 @@
-use config;
+use crate::config;
 
 /// A clock mask.
 ///

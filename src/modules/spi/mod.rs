@@ -4,7 +4,7 @@ mod clock;
 // FIXME: Start using this module or delete!!!
 #[allow(dead_code)] mod settings;
 
-use {Register, Pin};
+use crate::{Register, Pin};
 
 /// An SPI module.
 ///

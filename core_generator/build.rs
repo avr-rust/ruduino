@@ -91,8 +91,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
 fn write_core_module(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     writeln!(w, "//! Core for {}.", mcu.device.name)?;
     writeln!(w)?;
-    writeln!(w, "use {{RegisterBits, Register}};")?;
-    writeln!(w, "use modules;")?;
+    writeln!(w, "use crate::{{modules, RegisterBits, Register}};")?;
     writeln!(w)?;
 
     gen::write_registers(mcu, w)?;

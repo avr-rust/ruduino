@@ -1,4 +1,4 @@
-use {RegisterBits, Register};
+use crate::{RegisterBits, Register};
 use core::marker;
 
 /// A 8-bit timer.

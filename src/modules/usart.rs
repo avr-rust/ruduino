@@ -1,4 +1,4 @@
-use Register;
+use crate::Register;
 
 pub trait HardwareUsart {
     /// The USART data register.

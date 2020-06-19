@@ -48,7 +48,7 @@ pub fn write_pins(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(port) = mcu.peripheral("PORT") {
         writeln!(w, "pub mod port {{")?;
         writeln!(w, "    use super::*;")?;
-        writeln!(w, "    use Pin;")?;
+        writeln!(w, "    use crate::Pin;")?;
         writeln!(w)?;
 
         for instance in port.instances.iter() {

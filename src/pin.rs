@@ -1,4 +1,4 @@
-use Register;
+use crate::Register;
 
 /// Represents whether a pin is an input or an output.
 pub enum DataDirection {
