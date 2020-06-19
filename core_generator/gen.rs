@@ -2,7 +2,7 @@ use avr_mcu::*;
 use std::io;
 use std::io::prelude::*;
 
-pub fn write_registers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     for register in mcu.registers() {
         let ty = if register.size == 1 { "u8" } else { "u16" };
 
@@ -44,7 +44,7 @@ pub fn write_registers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn write_pins(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+pub fn write_pins(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(port) = mcu.peripheral("PORT") {
         writeln!(w, "pub mod port {{")?;
         writeln!(w, "    use super::*;")?;
@@ -87,7 +87,7 @@ pub fn write_pins(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn write_spi_modules(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+pub fn write_spi_modules(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(module) = mcu.module("SPI") {
         let peripheral = mcu.peripheral("SPI").expect("found SPI module but no peripheral");
         let port_peripheral = mcu.port_peripheral();
@@ -129,7 +129,7 @@ pub fn write_spi_modules(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn write_usarts(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+pub fn write_usarts(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(module) = mcu.module("USART") {
         for usart in module.register_groups.iter() {
             writeln!(w, "/// The {} module.", usart.name)?;
@@ -156,7 +156,7 @@ pub fn write_usarts(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn write_timers(mcu: &Mcu, w: &mut Write) -> Result<(), io::Error> {
+pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(tc) = mcu.module("TC8") { // Timer/Counter, 8-bit.
         const TYPE_NAME: &'static str = "Timer8";
 
