@@ -4,7 +4,6 @@
 #![feature(const_fn)]
 #![feature(associated_type_defaults)]
 #![feature(lang_items)]
-#![feature(panic_handler)]
 #![feature(unwind_attributes)]
 
 #![no_std]
