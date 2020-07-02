@@ -41,9 +41,12 @@ fn main() {
     } else {
         avr_mcu::microcontroller(DEFAULT_MCU_FOR_NON_AVR_DOCS)
     };
+    let current_mcu_name = current_mcu.device.name.clone();
 
     generate_config_module().unwrap();
     generate_cores(&[current_mcu]).unwrap();
+
+    println!("cargo:rustc-cfg=avr_mcu_{}", normalize_device_name(&current_mcu_name));
 }
 
 fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
@@ -80,21 +83,14 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
     let path = cores_path().join("mod.rs");
     let mut w = File::create(&path)?;
 
-    if avr_mcu::current::is_compiling_for_avr() {
-        let current_mcu_name = target_cpu_fetch::target_cpu().expect("could not get the target CPU for ruduino core generation");
-
-        writeln!(w)?;
-        if let Some(current_mcu_name) = current_mcu_name {
-            writeln!(w, "/// Expose the current MCU core ({}).", current_mcu_name)?;
-            writeln!(w, "pub use self::{} as current;", current_mcu_name)?;
-        }
-    }
-
     writeln!(w)?;
     for mcu in mcus {
         let module_name = core_module_name(mcu);
         writeln!(w, "/// The {}.", mcu.device.name)?;
         writeln!(w, "pub mod {};", module_name)?;
+
+        writeln!(w, "#[cfg(avr_mcu_{})]", module_name)?;
+        writeln!(w, "pub use self::{} as current;", module_name)?;
     }
     writeln!(w)
 }
