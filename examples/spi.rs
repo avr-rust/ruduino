@@ -1,8 +1,8 @@
 #![no_std]
 #![no_main]
 
-extern crate arduino;
-use arduino::cores::current;
+extern crate ruduino;
+use ruduino::cores::current;
 
 // Some devices may have multiple SPI modules.
 // The ATmega328p only has one.

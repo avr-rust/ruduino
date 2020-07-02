@@ -19,6 +19,10 @@ build = "core_generator/build.rs"
 
 keywords = ["avr", "arduino", "uno"]
 
+[dependencies]
+target-cpu-macro = "0.1"
+
 [build-dependencies]
-avr-mcu = "0.2"
+avr-mcu = "0.3"
+target-cpu-fetch = "0.1.0"
 

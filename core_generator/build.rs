@@ -23,7 +23,11 @@ fn cores_path() -> PathBuf {
 }
 
 fn core_module_name(mcu: &Mcu) -> String {
-    mcu.device.name.to_lowercase().to_owned()
+    normalize_device_name(&mcu.device.name)
+}
+
+fn normalize_device_name(device_name: &str) -> String {
+    device_name.to_lowercase().to_owned()
 }
 
 fn main() {
@@ -31,7 +35,7 @@ fn main() {
         fs::create_dir_all(&cores_path()).expect("could not create cores directory");
     }
 
-    let current_mcu = if cfg!(arch = "avr") {
+    let current_mcu = if avr_mcu::current::is_compiling_for_avr() {
         avr_mcu::current::mcu()
             .expect("no target cpu specified")
     } else {
@@ -76,14 +80,21 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
     let path = cores_path().join("mod.rs");
     let mut w = File::create(&path)?;
 
+    if avr_mcu::current::is_compiling_for_avr() {
+        let current_mcu_name = target_cpu_fetch::target_cpu().expect("could not get the target CPU for ruduino core generation");
+
+        writeln!(w)?;
+        if let Some(current_mcu_name) = current_mcu_name {
+            writeln!(w, "/// Expose the current MCU core ({}).", current_mcu_name)?;
+            writeln!(w, "pub use self::{} as current;", current_mcu_name)?;
+        }
+    }
+
     writeln!(w)?;
     for mcu in mcus {
         let module_name = core_module_name(mcu);
         writeln!(w, "/// The {}.", mcu.device.name)?;
         writeln!(w, "pub mod {};", module_name)?;
-
-        writeln!(w, "#[cfg(all(target_arch = \"avr\", target_cpu = \"{}\"))]", module_name)?;
-        writeln!(w, "pub use self::{} as current;", module_name)?;
     }
     writeln!(w)
 }
