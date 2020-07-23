@@ -155,7 +155,7 @@ pub struct Timer16Setup<T: Timer16> {
 
 impl<T: Timer16> Timer16Setup<T> {
     #[inline]
-    fn new() -> Self {
+    pub fn new() -> Self {
         Timer16Setup {
             a: RegisterBits::zero(),
             b: RegisterBits::zero(),
