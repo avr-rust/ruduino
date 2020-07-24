@@ -5,6 +5,7 @@
 #![feature(associated_type_defaults)]
 #![feature(lang_items)]
 #![feature(unwind_attributes)]
+#![feature(proc_macro_hygiene)]
 
 #![no_std]
 

@@ -23,7 +23,11 @@ fn cores_path() -> PathBuf {
 }
 
 fn core_module_name(mcu: &Mcu) -> String {
-    mcu.device.name.to_lowercase().to_owned()
+    normalize_device_name(&mcu.device.name)
+}
+
+fn normalize_device_name(device_name: &str) -> String {
+    device_name.to_lowercase().to_owned()
 }
 
 fn main() {
@@ -31,15 +35,18 @@ fn main() {
         fs::create_dir_all(&cores_path()).expect("could not create cores directory");
     }
 
-    let current_mcu = if cfg!(arch = "avr") {
+    let current_mcu = if avr_mcu::current::is_compiling_for_avr() {
         avr_mcu::current::mcu()
             .expect("no target cpu specified")
     } else {
         avr_mcu::microcontroller(DEFAULT_MCU_FOR_NON_AVR_DOCS)
     };
+    let current_mcu_name = current_mcu.device.name.clone();
 
     generate_config_module().unwrap();
     generate_cores(&[current_mcu]).unwrap();
+
+    println!("cargo:rustc-cfg=avr_mcu_{}", normalize_device_name(&current_mcu_name));
 }
 
 fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
@@ -82,7 +89,7 @@ fn generate_cores_mod_rs(mcus: &[Mcu]) -> Result<(), io::Error> {
         writeln!(w, "/// The {}.", mcu.device.name)?;
         writeln!(w, "pub mod {};", module_name)?;
 
-        writeln!(w, "#[cfg(all(target_arch = \"avr\", target_cpu = \"{}\"))]", module_name)?;
+        writeln!(w, "#[cfg(avr_mcu_{})]", module_name)?;
         writeln!(w, "pub use self::{} as current;", module_name)?;
     }
     writeln!(w)
