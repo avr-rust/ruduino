@@ -1,0 +1,25 @@
+name: Test suite
+
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+  - cron: "0 2 * * 1-5"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Prepare the AVR Rust build environment
+      run:
+        docker build . --file Dockerfile.ci --tag avr-rust/ruduino.ci:$GITHUB_RUN_NUMBER
+
+    - name: Compile the crate
+      run:
+        docker run avr-rust/ruduino.ci:$GITHUB_RUN_NUMBER
+
