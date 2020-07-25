@@ -24,6 +24,4 @@ pub mod config;
 
 mod register;
 mod pin;
-#[doc(hidden)]
-pub mod std_stub;
 
