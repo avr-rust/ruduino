@@ -1,6 +1,6 @@
 [package]
 name = "ruduino"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2018"
 authors = [
   "The AVR-Rust Project Developers",
