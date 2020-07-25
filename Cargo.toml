@@ -20,6 +20,7 @@ build = "core_generator/build.rs"
 keywords = ["avr", "arduino", "uno"]
 
 [dependencies]
+avr-std-stub = "1.0"
 target-cpu-macro = "0.1"
 
 [build-dependencies]

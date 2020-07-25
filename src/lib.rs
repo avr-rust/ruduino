@@ -9,6 +9,8 @@
 
 #![no_std]
 
+extern crate avr_std_stub;
+
 pub use self::register::{Register, RegisterBits, RegisterValue};
 pub use self::pin::{DataDirection, Pin};
 
