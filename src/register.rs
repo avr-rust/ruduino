@@ -203,12 +203,12 @@ impl<R> ops::Not for RegisterBits<R> where R: Register {
     }
 }
 
-impl<R> Into<u8> for RegisterBits<R> where R: Register<T=u8> {
-    fn into(self) -> u8 { self.mask }
+impl<R> From<RegisterBits<R>> for u8 where R: Register<T=u8> {
+    fn from(other: RegisterBits<R>) -> u8 { other.mask }
 }
 
-impl<R> Into<u16> for RegisterBits<R> where R: Register<T=u16> {
-    fn into(self) -> u16 { self.mask }
+impl<R> From<RegisterBits<R>> for u16 where R: Register<T=u16> {
+    fn from(other: RegisterBits<R>) -> u16 { other.mask }
 }
 
 impl RegisterValue for u8 { }
