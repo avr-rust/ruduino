@@ -11,6 +11,7 @@ struct DisableInterrupts(PhantomData<()>);
 ///
 /// Restores interrupts after the closure has completed
 /// execution.
+#[inline(always)]
 pub fn without_interrupts<F, T>(f: F) -> T
     where F: FnOnce() -> T
 {
@@ -19,7 +20,7 @@ pub fn without_interrupts<F, T>(f: F) -> T
 }
 
 impl DisableInterrupts {
-    #[inline]
+    #[inline(always)]
     pub fn new() -> DisableInterrupts {
         unsafe { llvm_asm!("CLI") }
         DisableInterrupts(PhantomData)
@@ -27,7 +28,7 @@ impl DisableInterrupts {
 }
 
 impl Drop for DisableInterrupts {
-    #[inline]
+    #[inline(always)]
     fn drop(&mut self) {
         unsafe { llvm_asm!("SEI") }
     }
