@@ -31,14 +31,14 @@ pub trait Register : Sized {
     #[inline(always)]
     fn write<V>(value: V) where V: Into<Self::T> {
         unsafe {
-            *Self::ADDRESS = value.into();
+            core::ptr::write_volatile(Self::ADDRESS, value.into());
         }
     }
 
     /// Reads the value of the register.
     #[inline(always)]
     fn read() -> Self::T {
-        unsafe { *Self::ADDRESS }
+        unsafe { core::ptr::read_volatile(Self::ADDRESS) }
     }
 
     /// Sets a set of bits to `1` in the register.
@@ -69,7 +69,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn unset_mask_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDRESS &= !mask;
+            core::ptr::write_volatile(Self::ADDRESS, core::ptr::read_volatile(Self::ADDRESS) & !mask)
         }
     }
 
@@ -88,7 +88,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn toggle_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDRESS ^= mask;
+            core::ptr::write_volatile(Self::ADDRESS, core::ptr::read_volatile(Self::ADDRESS) ^ mask)
         }
     }
 
@@ -106,7 +106,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn is_mask_set_raw(mask: Self::T) -> bool {
         unsafe {
-            (*Self::ADDRESS & mask) == mask
+            (core::ptr::read_volatile(Self::ADDRESS) & mask) == mask
         }
     }
 
@@ -124,7 +124,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn is_clear_raw(mask: Self::T) -> bool {
         unsafe {
-            (*Self::ADDRESS & mask) == Self::T::from(0)
+            (core::ptr::read_volatile(Self::ADDRESS) & mask) == Self::T::from(0)
         }
     }
 
