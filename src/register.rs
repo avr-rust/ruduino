@@ -52,7 +52,7 @@ pub trait Register : Sized {
     #[inline(always)]
     fn set_mask_raw(mask: Self::T) {
         unsafe {
-            *Self::ADDRESS |= mask;
+            core::ptr::write_volatile(Self::ADDRESS, core::ptr::read_volatile(Self::ADDRESS) | mask);
         }
     }
 
