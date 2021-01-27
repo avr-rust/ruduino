@@ -46,7 +46,6 @@ fn main() {
     };
     let current_mcu_name = current_mcu.device.name.clone();
 
-    generate_config_module().unwrap();
     generate_cores(&[current_mcu]).unwrap();
 
     println!("cargo:rustc-cfg=avr_mcu_{}", normalize_device_name(&current_mcu_name));
@@ -57,23 +56,6 @@ fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
         generate_core_module(mcu).expect("failed to generate mcu core");
     }
     generate_cores_mod_rs(mcus)
-}
-
-fn generate_config_module() -> Result<(), io::Error> {
-    let path = base_output_path().join("config.rs");
-    let mut f = File::create(&path)?;
-
-    let clock: u64 = if cfg!(arch = "avr") {
-        env::var("AVR_CPU_FREQUENCY_HZ")
-            .expect("Please set the '$AVR_CPU_FREQUENCY_HZ' environment variable")
-            .parse()
-            .expect("The $AVR_CPU_FREQUENCY_HZ environment variable is not an integer")
-    } else {
-        DEFAULT_FREQUENCY_HZ_FOR_NON_AVR_DOCS
-    };
-    writeln!(f, "/// The clock frequency of device being targeted in Hertz.")?;
-    writeln!(f, "pub const CPU_FREQUENCY_HZ: u32 = {};", clock)?;
-    Ok(())
 }
 
 fn generate_core_module(mcu: &Mcu) -> Result<(), io::Error> {
