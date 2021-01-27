@@ -9,6 +9,7 @@ pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
         // HACK: Skip, atmeg328p pack defines two of these.
         if register.name == "GTCCR" { continue; }
 
+        writeln!(w, "#[allow(non_camel_case_types)]")?;
         writeln!(w, "pub struct {};", register.name)?;
         writeln!(w)?;
 
@@ -47,6 +48,8 @@ pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
 pub fn write_pins(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
     if let Some(port) = mcu.peripheral("PORT") {
         writeln!(w, "pub mod port {{")?;
+        writeln!(w, "    #![allow(unused_imports)]")?;
+        writeln!(w)?;
         writeln!(w, "    use super::*;")?;
         writeln!(w, "    use crate::Pin;")?;
         writeln!(w)?;
@@ -164,32 +167,41 @@ pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
             tc.registers().find(|r| r.name.starts_with(name))
                 .expect(&format!("could not find '{}' register", name))
         };
-        let find_reg_suffix = |name: &'static str, suffix: &'static str| {
+        let find_reg_suffix_optional = |name: &'static str, suffix: &'static str| {
             tc.registers().find(|r| r.name.starts_with(name) && r.name.ends_with(suffix))
+        };
+        let find_reg_suffix = |name: &'static str, suffix: &'static str| {
+            find_reg_suffix_optional(name, suffix)
                 .expect(&format!("could not find '{}' register", name))
         };
         let timer_number = find_reg("TIMSK").name.chars().last().unwrap()
             .to_digit(10).unwrap();
 
-        writeln!(w, "/// 8-bit timer.")?;
-        writeln!(w, "pub struct {};", TYPE_NAME)?;
-        writeln!(w)?;
-        writeln!(w, "impl modules::Timer8 for {} {{", TYPE_NAME)?;
-        writeln!(w, "    type CompareA = {};", find_reg_suffix("OCR", "A").name)?;
-        writeln!(w, "    type CompareB = {};", find_reg_suffix("OCR", "B").name)?;
-        writeln!(w, "    type Counter = {};", find_reg("TCNT").name)?;
-        writeln!(w, "    type ControlA = {};", find_reg_suffix("TCCR", "A").name)?;
-        writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
-        writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
-        writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-        writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS00;")?;
-        writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS01;")?;
-        writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS02;")?;
-        writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM00;")?;
-        writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM01;")?;
-        writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM020;")?;
-        writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
-        writeln!(w, "}}")?;
+        // TODO: At the moment, we do not support 8 bit timers that don't have two compare
+        // registers.
+        let should_skip_timer = find_reg_suffix_optional("OCR", "B").is_none();
+
+        if !should_skip_timer {
+            writeln!(w, "/// 8-bit timer.")?;
+            writeln!(w, "pub struct {};", TYPE_NAME)?;
+            writeln!(w)?;
+            writeln!(w, "impl modules::Timer8 for {} {{", TYPE_NAME)?;
+            writeln!(w, "    type CompareA = {};", find_reg_suffix("OCR", "A").name)?;
+            writeln!(w, "    type CompareB = {};", find_reg_suffix("OCR", "B").name)?;
+            writeln!(w, "    type Counter = {};", find_reg("TCNT").name)?;
+            writeln!(w, "    type ControlA = {};", find_reg_suffix("TCCR", "A").name)?;
+            writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
+            writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
+            writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
+            writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS00;")?;
+            writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS01;")?;
+            writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS02;")?;
+            writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM00;")?;
+            writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM01;")?;
+            writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM020;")?;
+            writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
+            writeln!(w, "}}")?;
+        }
     }
 
     if let Some(tc) = mcu.module("TC16") { // Timer/Counter, 16-bit.
