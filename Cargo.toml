@@ -1,3 +1,9 @@
+[workspace]
+members = [
+  ".",
+  "./core_generator",
+]
+
 [package]
 name = "ruduino"
 version = "0.2.7"
@@ -15,8 +21,6 @@ description = """
 Reusable components for AVR microcontrollers
 """
 
-build = "core_generator/build.rs"
-
 keywords = ["avr", "arduino", "uno"]
 
 [features]
@@ -25,8 +29,3 @@ default = ["avr-std-stub"]
 [dependencies]
 avr-std-stub = { version = "1.0", optional = true }
 target-cpu-macro = "0.1"
-
-[build-dependencies]
-avr-mcu = "0.3"
-target-cpu-fetch = "0.1"
-
