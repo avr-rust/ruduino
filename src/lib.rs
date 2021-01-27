@@ -11,6 +11,8 @@
 
 #[cfg(feature = "avr-std-stub")] extern crate avr_std_stub;
 
+extern crate const_env__value as const_env;
+
 pub use self::register::{Register, RegisterBits, RegisterValue};
 pub use self::pin::{DataDirection, Pin};
 
