@@ -14,12 +14,15 @@ const DEFAULT_MCU_FOR_NON_AVR_DOCS: &'static str = "atmega328";
 
 const DEFAULT_FREQUENCY_HZ_FOR_NON_AVR_DOCS: u64 = 16_000_000;
 
-fn src_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("src")
+fn base_output_path() -> PathBuf {
+    match std::env::args().skip(1).next() {
+        Some(path) => Path::new(&path).to_owned(),
+        None => panic!("please pass a destination path for the generated cores on the command line"),
+    }
 }
 
 fn cores_path() -> PathBuf {
-    src_path().join("cores")
+    base_output_path().join("cores")
 }
 
 fn core_module_name(mcu: &Mcu) -> String {
@@ -57,7 +60,7 @@ fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
 }
 
 fn generate_config_module() -> Result<(), io::Error> {
-    let path = src_path().join("config.rs");
+    let path = base_output_path().join("config.rs");
     let mut f = File::create(&path)?;
 
     let clock: u64 = if cfg!(arch = "avr") {
