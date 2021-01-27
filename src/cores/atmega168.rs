@@ -1,4 +1,4 @@
-//! Core for ATmega328.
+//! Core for ATmega168.
 
 use crate::{modules, RegisterBits, Register};
 
@@ -6,10 +6,12 @@ use crate::{modules, RegisterBits, Register};
 pub struct EXTENDED;
 
 impl EXTENDED {
-    pub const BODLEVEL: RegisterBits<Self> = RegisterBits::new(0x7);
-    pub const BODLEVEL0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const BODLEVEL1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const BODLEVEL2: RegisterBits<Self> = RegisterBits::new(1<<2);
+    pub const BOOTSZ: RegisterBits<Self> = RegisterBits::new(0x6);
+    pub const BOOTSZ0: RegisterBits<Self> = RegisterBits::new(1<<1);
+    pub const BOOTSZ1: RegisterBits<Self> = RegisterBits::new(1<<2);
+
+    pub const BOOTRST: RegisterBits<Self> = RegisterBits::new(0x1);
+    pub const BOOTRST0: RegisterBits<Self> = RegisterBits::new(1<<0);
 
 }
 
@@ -36,12 +38,10 @@ impl HIGH {
     pub const EESAVE: RegisterBits<Self> = RegisterBits::new(0x8);
     pub const EESAVE0: RegisterBits<Self> = RegisterBits::new(1<<3);
 
-    pub const BOOTSZ: RegisterBits<Self> = RegisterBits::new(0x6);
-    pub const BOOTSZ0: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const BOOTSZ1: RegisterBits<Self> = RegisterBits::new(1<<2);
-
-    pub const BOOTRST: RegisterBits<Self> = RegisterBits::new(0x1);
-    pub const BOOTRST0: RegisterBits<Self> = RegisterBits::new(1<<0);
+    pub const BODLEVEL: RegisterBits<Self> = RegisterBits::new(0x7);
+    pub const BODLEVEL0: RegisterBits<Self> = RegisterBits::new(1<<0);
+    pub const BODLEVEL1: RegisterBits<Self> = RegisterBits::new(1<<1);
+    pub const BODLEVEL2: RegisterBits<Self> = RegisterBits::new(1<<2);
 
 }
 
@@ -99,16 +99,6 @@ impl Register for LOCKBIT {
 pub struct UDR0;
 
 impl UDR0 {
-    pub const UDR0: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const UDR00: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const UDR01: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const UDR02: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const UDR03: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const UDR04: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const UDR05: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const UDR06: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const UDR07: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for UDR0 {
@@ -215,20 +205,6 @@ impl Register for UCSR0C {
 pub struct UBRR0;
 
 impl UBRR0 {
-    pub const UBRR0: RegisterBits<Self> = RegisterBits::new(0xfff);
-    pub const UBRR00: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const UBRR01: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const UBRR02: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const UBRR03: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const UBRR04: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const UBRR05: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const UBRR06: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const UBRR07: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const UBRR08: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const UBRR09: RegisterBits<Self> = RegisterBits::new(1<<9);
-    pub const UBRR010: RegisterBits<Self> = RegisterBits::new(1<<10);
-    pub const UBRR011: RegisterBits<Self> = RegisterBits::new(1<<11);
-
 }
 
 impl Register for UBRR0 {
@@ -258,16 +234,6 @@ impl Register for TWAMR {
 pub struct TWBR;
 
 impl TWBR {
-    pub const TWBR: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const TWBR0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const TWBR1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const TWBR2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const TWBR3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const TWBR4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const TWBR5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const TWBR6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const TWBR7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for TWBR {
@@ -330,16 +296,6 @@ impl Register for TWSR {
 pub struct TWDR;
 
 impl TWDR {
-    pub const TWDR: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const TWDR0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const TWDR1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const TWDR2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const TWDR3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const TWDR4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const TWDR5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const TWDR6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const TWDR7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for TWDR {
@@ -479,23 +435,6 @@ impl Register for TCCR1C {
 pub struct TCNT1;
 
 impl TCNT1 {
-    pub const TCNT1: RegisterBits<Self> = RegisterBits::new(0xffff);
-    pub const TCNT10: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const TCNT11: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const TCNT12: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const TCNT13: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const TCNT14: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const TCNT15: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const TCNT16: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const TCNT17: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const TCNT18: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const TCNT19: RegisterBits<Self> = RegisterBits::new(1<<9);
-    pub const TCNT110: RegisterBits<Self> = RegisterBits::new(1<<10);
-    pub const TCNT111: RegisterBits<Self> = RegisterBits::new(1<<11);
-    pub const TCNT112: RegisterBits<Self> = RegisterBits::new(1<<12);
-    pub const TCNT113: RegisterBits<Self> = RegisterBits::new(1<<13);
-    pub const TCNT114: RegisterBits<Self> = RegisterBits::new(1<<14);
-
 }
 
 impl Register for TCNT1 {
@@ -506,23 +445,6 @@ impl Register for TCNT1 {
 pub struct OCR1A;
 
 impl OCR1A {
-    pub const OCR1A: RegisterBits<Self> = RegisterBits::new(0xffff);
-    pub const OCR1A0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR1A1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR1A2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR1A3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR1A4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR1A5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR1A6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR1A7: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const OCR1A8: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const OCR1A9: RegisterBits<Self> = RegisterBits::new(1<<9);
-    pub const OCR1A10: RegisterBits<Self> = RegisterBits::new(1<<10);
-    pub const OCR1A11: RegisterBits<Self> = RegisterBits::new(1<<11);
-    pub const OCR1A12: RegisterBits<Self> = RegisterBits::new(1<<12);
-    pub const OCR1A13: RegisterBits<Self> = RegisterBits::new(1<<13);
-    pub const OCR1A14: RegisterBits<Self> = RegisterBits::new(1<<14);
-
 }
 
 impl Register for OCR1A {
@@ -533,23 +455,6 @@ impl Register for OCR1A {
 pub struct OCR1B;
 
 impl OCR1B {
-    pub const OCR1B: RegisterBits<Self> = RegisterBits::new(0xffff);
-    pub const OCR1B0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR1B1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR1B2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR1B3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR1B4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR1B5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR1B6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR1B7: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const OCR1B8: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const OCR1B9: RegisterBits<Self> = RegisterBits::new(1<<9);
-    pub const OCR1B10: RegisterBits<Self> = RegisterBits::new(1<<10);
-    pub const OCR1B11: RegisterBits<Self> = RegisterBits::new(1<<11);
-    pub const OCR1B12: RegisterBits<Self> = RegisterBits::new(1<<12);
-    pub const OCR1B13: RegisterBits<Self> = RegisterBits::new(1<<13);
-    pub const OCR1B14: RegisterBits<Self> = RegisterBits::new(1<<14);
-
 }
 
 impl Register for OCR1B {
@@ -560,23 +465,6 @@ impl Register for OCR1B {
 pub struct ICR1;
 
 impl ICR1 {
-    pub const ICR1: RegisterBits<Self> = RegisterBits::new(0xffff);
-    pub const ICR10: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const ICR11: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const ICR12: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const ICR13: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const ICR14: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const ICR15: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const ICR16: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const ICR17: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const ICR18: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const ICR19: RegisterBits<Self> = RegisterBits::new(1<<9);
-    pub const ICR110: RegisterBits<Self> = RegisterBits::new(1<<10);
-    pub const ICR111: RegisterBits<Self> = RegisterBits::new(1<<11);
-    pub const ICR112: RegisterBits<Self> = RegisterBits::new(1<<12);
-    pub const ICR113: RegisterBits<Self> = RegisterBits::new(1<<13);
-    pub const ICR114: RegisterBits<Self> = RegisterBits::new(1<<14);
-
 }
 
 impl Register for ICR1 {
@@ -671,16 +559,6 @@ impl Register for TCCR2B {
 pub struct TCNT2;
 
 impl TCNT2 {
-    pub const TCNT2: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const TCNT20: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const TCNT21: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const TCNT22: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const TCNT23: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const TCNT24: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const TCNT25: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const TCNT26: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const TCNT27: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for TCNT2 {
@@ -691,16 +569,6 @@ impl Register for TCNT2 {
 pub struct OCR2B;
 
 impl OCR2B {
-    pub const OCR2B: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const OCR2B0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR2B1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR2B2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR2B3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR2B4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR2B5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR2B6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR2B7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for OCR2B {
@@ -711,16 +579,6 @@ impl Register for OCR2B {
 pub struct OCR2A;
 
 impl OCR2A {
-    pub const OCR2A: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const OCR2A0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR2A1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR2A2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR2A3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR2A4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR2A5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR2A6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR2A7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for OCR2A {
@@ -785,18 +643,6 @@ impl Register for ADMUX {
 pub struct ADC;
 
 impl ADC {
-    pub const ADC: RegisterBits<Self> = RegisterBits::new(0x3ff);
-    pub const ADC0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const ADC1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const ADC2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const ADC3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const ADC4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const ADC5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const ADC6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const ADC7: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const ADC8: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const ADC9: RegisterBits<Self> = RegisterBits::new(1<<9);
-
 }
 
 impl Register for ADC {
@@ -1021,16 +867,6 @@ impl Register for PIND {
 pub struct OCR0B;
 
 impl OCR0B {
-    pub const OCR0B: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const OCR0B0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR0B1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR0B2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR0B3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR0B4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR0B5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR0B6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR0B7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for OCR0B {
@@ -1041,16 +877,6 @@ impl Register for OCR0B {
 pub struct OCR0A;
 
 impl OCR0A {
-    pub const OCR0A: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const OCR0A0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const OCR0A1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const OCR0A2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const OCR0A3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const OCR0A4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const OCR0A5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const OCR0A6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const OCR0A7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for OCR0A {
@@ -1061,16 +887,6 @@ impl Register for OCR0A {
 pub struct TCNT0;
 
 impl TCNT0 {
-    pub const TCNT0: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const TCNT00: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const TCNT01: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const TCNT02: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const TCNT03: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const TCNT04: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const TCNT05: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const TCNT06: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const TCNT07: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for TCNT0 {
@@ -1300,16 +1116,6 @@ impl Register for PCIFR {
 pub struct SPDR;
 
 impl SPDR {
-    pub const SPDR: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const SPDR0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const SPDR1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const SPDR2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const SPDR3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const SPDR4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const SPDR5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const SPDR6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const SPDR7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for SPDR {
@@ -1366,102 +1172,6 @@ impl SPCR {
 impl Register for SPCR {
     type T = u8;
     const ADDRESS: *mut u8 = 0x4c as *mut u8;
-}
-#[allow(non_camel_case_types)]
-pub struct WDTCSR;
-
-impl WDTCSR {
-    pub const WDIF: RegisterBits<Self> = RegisterBits::new(0x80);
-    pub const WDIF0: RegisterBits<Self> = RegisterBits::new(1<<7);
-
-    pub const WDIE: RegisterBits<Self> = RegisterBits::new(0x40);
-    pub const WDIE0: RegisterBits<Self> = RegisterBits::new(1<<6);
-
-    pub const WDP: RegisterBits<Self> = RegisterBits::new(0x27);
-    pub const WDP0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const WDP1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const WDP2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const WDP3: RegisterBits<Self> = RegisterBits::new(1<<5);
-
-    pub const WDCE: RegisterBits<Self> = RegisterBits::new(0x10);
-    pub const WDCE0: RegisterBits<Self> = RegisterBits::new(1<<4);
-
-    pub const WDE: RegisterBits<Self> = RegisterBits::new(0x8);
-    pub const WDE0: RegisterBits<Self> = RegisterBits::new(1<<3);
-
-}
-
-impl Register for WDTCSR {
-    type T = u8;
-    const ADDRESS: *mut u8 = 0x60 as *mut u8;
-}
-#[allow(non_camel_case_types)]
-pub struct EEAR;
-
-impl EEAR {
-    pub const EEAR: RegisterBits<Self> = RegisterBits::new(0x3ff);
-    pub const EEAR0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const EEAR1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const EEAR2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const EEAR3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const EEAR4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const EEAR5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const EEAR6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const EEAR7: RegisterBits<Self> = RegisterBits::new(1<<7);
-    pub const EEAR8: RegisterBits<Self> = RegisterBits::new(1<<8);
-    pub const EEAR9: RegisterBits<Self> = RegisterBits::new(1<<9);
-
-}
-
-impl Register for EEAR {
-    type T = u16;
-    const ADDRESS: *mut u16 = 0x41 as *mut u16;
-}
-#[allow(non_camel_case_types)]
-pub struct EEDR;
-
-impl EEDR {
-    pub const EEDR: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const EEDR0: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const EEDR1: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const EEDR2: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const EEDR3: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const EEDR4: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const EEDR5: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const EEDR6: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const EEDR7: RegisterBits<Self> = RegisterBits::new(1<<7);
-
-}
-
-impl Register for EEDR {
-    type T = u8;
-    const ADDRESS: *mut u8 = 0x40 as *mut u8;
-}
-#[allow(non_camel_case_types)]
-pub struct EECR;
-
-impl EECR {
-    pub const EEPM: RegisterBits<Self> = RegisterBits::new(0x30);
-    pub const EEPM0: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const EEPM1: RegisterBits<Self> = RegisterBits::new(1<<5);
-
-    pub const EERIE: RegisterBits<Self> = RegisterBits::new(0x8);
-    pub const EERIE0: RegisterBits<Self> = RegisterBits::new(1<<3);
-
-    pub const EEMPE: RegisterBits<Self> = RegisterBits::new(0x4);
-    pub const EEMPE0: RegisterBits<Self> = RegisterBits::new(1<<2);
-
-    pub const EEPE: RegisterBits<Self> = RegisterBits::new(0x2);
-    pub const EEPE0: RegisterBits<Self> = RegisterBits::new(1<<1);
-
-    pub const EERE: RegisterBits<Self> = RegisterBits::new(0x1);
-    pub const EERE0: RegisterBits<Self> = RegisterBits::new(1<<0);
-
-}
-
-impl Register for EECR {
-    type T = u8;
-    const ADDRESS: *mut u8 = 0x3f as *mut u8;
 }
 #[allow(non_camel_case_types)]
 pub struct PRR;
@@ -1587,9 +1297,6 @@ impl SPMCSR {
     pub const RWWSB: RegisterBits<Self> = RegisterBits::new(0x40);
     pub const RWWSB0: RegisterBits<Self> = RegisterBits::new(1<<6);
 
-    pub const SIGRD: RegisterBits<Self> = RegisterBits::new(0x20);
-    pub const SIGRD0: RegisterBits<Self> = RegisterBits::new(1<<5);
-
     pub const RWWSRE: RegisterBits<Self> = RegisterBits::new(0x10);
     pub const RWWSRE0: RegisterBits<Self> = RegisterBits::new(1<<4);
 
@@ -1602,8 +1309,8 @@ impl SPMCSR {
     pub const PGERS: RegisterBits<Self> = RegisterBits::new(0x2);
     pub const PGERS0: RegisterBits<Self> = RegisterBits::new(1<<1);
 
-    pub const SPMEN: RegisterBits<Self> = RegisterBits::new(0x1);
-    pub const SPMEN0: RegisterBits<Self> = RegisterBits::new(1<<0);
+    pub const SELFPRGEN: RegisterBits<Self> = RegisterBits::new(0x1);
+    pub const SELFPRGEN0: RegisterBits<Self> = RegisterBits::new(1<<0);
 
 }
 
@@ -1674,16 +1381,6 @@ impl Register for SMCR {
 pub struct GPIOR2;
 
 impl GPIOR2 {
-    pub const GPIOR2: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const GPIOR20: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const GPIOR21: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const GPIOR22: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const GPIOR23: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const GPIOR24: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const GPIOR25: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const GPIOR26: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const GPIOR27: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for GPIOR2 {
@@ -1694,16 +1391,6 @@ impl Register for GPIOR2 {
 pub struct GPIOR1;
 
 impl GPIOR1 {
-    pub const GPIOR1: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const GPIOR10: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const GPIOR11: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const GPIOR12: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const GPIOR13: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const GPIOR14: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const GPIOR15: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const GPIOR16: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const GPIOR17: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for GPIOR1 {
@@ -1714,21 +1401,85 @@ impl Register for GPIOR1 {
 pub struct GPIOR0;
 
 impl GPIOR0 {
-    pub const GPIOR0: RegisterBits<Self> = RegisterBits::new(0xff);
-    pub const GPIOR00: RegisterBits<Self> = RegisterBits::new(1<<0);
-    pub const GPIOR01: RegisterBits<Self> = RegisterBits::new(1<<1);
-    pub const GPIOR02: RegisterBits<Self> = RegisterBits::new(1<<2);
-    pub const GPIOR03: RegisterBits<Self> = RegisterBits::new(1<<3);
-    pub const GPIOR04: RegisterBits<Self> = RegisterBits::new(1<<4);
-    pub const GPIOR05: RegisterBits<Self> = RegisterBits::new(1<<5);
-    pub const GPIOR06: RegisterBits<Self> = RegisterBits::new(1<<6);
-    pub const GPIOR07: RegisterBits<Self> = RegisterBits::new(1<<7);
-
 }
 
 impl Register for GPIOR0 {
     type T = u8;
     const ADDRESS: *mut u8 = 0x3e as *mut u8;
+}
+#[allow(non_camel_case_types)]
+pub struct WDTCSR;
+
+impl WDTCSR {
+    pub const WDIF: RegisterBits<Self> = RegisterBits::new(0x80);
+    pub const WDIF0: RegisterBits<Self> = RegisterBits::new(1<<7);
+
+    pub const WDIE: RegisterBits<Self> = RegisterBits::new(0x40);
+    pub const WDIE0: RegisterBits<Self> = RegisterBits::new(1<<6);
+
+    pub const WDP: RegisterBits<Self> = RegisterBits::new(0x27);
+    pub const WDP0: RegisterBits<Self> = RegisterBits::new(1<<0);
+    pub const WDP1: RegisterBits<Self> = RegisterBits::new(1<<1);
+    pub const WDP2: RegisterBits<Self> = RegisterBits::new(1<<2);
+    pub const WDP3: RegisterBits<Self> = RegisterBits::new(1<<5);
+
+    pub const WDCE: RegisterBits<Self> = RegisterBits::new(0x10);
+    pub const WDCE0: RegisterBits<Self> = RegisterBits::new(1<<4);
+
+    pub const WDE: RegisterBits<Self> = RegisterBits::new(0x8);
+    pub const WDE0: RegisterBits<Self> = RegisterBits::new(1<<3);
+
+}
+
+impl Register for WDTCSR {
+    type T = u8;
+    const ADDRESS: *mut u8 = 0x60 as *mut u8;
+}
+#[allow(non_camel_case_types)]
+pub struct EEAR;
+
+impl EEAR {
+}
+
+impl Register for EEAR {
+    type T = u16;
+    const ADDRESS: *mut u16 = 0x41 as *mut u16;
+}
+#[allow(non_camel_case_types)]
+pub struct EEDR;
+
+impl EEDR {
+}
+
+impl Register for EEDR {
+    type T = u8;
+    const ADDRESS: *mut u8 = 0x40 as *mut u8;
+}
+#[allow(non_camel_case_types)]
+pub struct EECR;
+
+impl EECR {
+    pub const EEPM: RegisterBits<Self> = RegisterBits::new(0x30);
+    pub const EEPM0: RegisterBits<Self> = RegisterBits::new(1<<4);
+    pub const EEPM1: RegisterBits<Self> = RegisterBits::new(1<<5);
+
+    pub const EERIE: RegisterBits<Self> = RegisterBits::new(0x8);
+    pub const EERIE0: RegisterBits<Self> = RegisterBits::new(1<<3);
+
+    pub const EEMPE: RegisterBits<Self> = RegisterBits::new(0x4);
+    pub const EEMPE0: RegisterBits<Self> = RegisterBits::new(1<<2);
+
+    pub const EEPE: RegisterBits<Self> = RegisterBits::new(0x2);
+    pub const EEPE0: RegisterBits<Self> = RegisterBits::new(1<<1);
+
+    pub const EERE: RegisterBits<Self> = RegisterBits::new(0x1);
+    pub const EERE0: RegisterBits<Self> = RegisterBits::new(1<<0);
+
+}
+
+impl Register for EECR {
+    type T = u8;
+    const ADDRESS: *mut u8 = 0x3f as *mut u8;
 }
 pub mod port {
     #![allow(unused_imports)]
