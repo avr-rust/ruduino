@@ -10,7 +10,8 @@ RUN mkdir -p /code && chown avr-rust:avr-rust /code
 USER avr-rust
 
 # Install Rustup along with nightly
-RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && sh /tmp/rustup.sh -y --profile minimal --default-toolchain nightly -c rust-src --quiet
+# TODO: Unpin from Jan 2021 nightly. The nightlies broke midway through the month.
+RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && sh /tmp/rustup.sh -y --profile minimal --default-toolchain nightly-2021-01-05 -c rust-src --quiet
 ENV PATH=/home/avr-rust/.cargo/bin:$PATH
 
 COPY --chown=avr-rust:avr-rust . /code/ruduino
