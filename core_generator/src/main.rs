@@ -137,14 +137,6 @@ fn main() {
         fs::create_dir_all(&cores_path()).expect("could not create cores directory");
     }
 
-    let current_mcu = if avr_mcu::current::is_compiling_for_avr() {
-        avr_mcu::current::mcu()
-            .expect("no target cpu specified")
-    } else {
-        avr_mcu::microcontroller(DEFAULT_MCU_FOR_NON_AVR_DOCS)
-    };
-    let current_mcu_name = current_mcu.device.name.clone();
-
     let microcontrollers = avr_mcu::microcontrollers();
     let (count_total, mut cores_successful, mut cores_failed) = (microcontrollers.len(), Vec::new(), Vec::new());
 
@@ -184,9 +176,6 @@ fn main() {
     println!("statistics:");
     println!("  total successful: {}", cores_successful.len());
     println!("  total failed: {}", cores_failed.len());
-
-
-    println!("cargo:rustc-cfg=avr_mcu_{}", normalize_device_name(&current_mcu_name));
 }
 
 fn generate_cores(mcus: &[Mcu]) -> Result<(), io::Error> {
