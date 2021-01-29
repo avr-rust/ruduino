@@ -8,8 +8,7 @@ use crate::{Register, Pin};
 
 /// An SPI module.
 ///
-/// Information at
-/// http://maxembedded.com/2013/11/the-spi-of-the-avr/
+/// Information at [maxembedded.com](http://maxembedded.com/2013/11/the-spi-of-the-avr/).
 pub trait HardwareSpi {
     type MasterInSlaveOut: Pin;
     type MasterOutSlaveIn: Pin;
