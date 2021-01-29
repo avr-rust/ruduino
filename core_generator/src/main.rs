@@ -217,10 +217,27 @@ fn generate_cores_mod_rs(mcus: &[&Mcu]) -> Result<(), io::Error> {
 
     for mcu in mcus {
         let module_name = core_module_name(mcu);
-        writeln!(w, "/// The {}.", mcu.device.name)?;
-        writeln!(w, "pub mod {};", module_name)?;
+        let is_fallback_mcu = module_name == DEFAULT_MCU_FOR_NON_AVR_DOCS;
 
-        writeln!(w, "#[cfg(avr_mcu_{})] pub use self::{} as current;", module_name, module_name)?;
+        let cfg_check_default_fallback = if is_fallback_mcu {
+            format!(", not(target_arch = \"avr\")")
+        } else {
+            String::new()
+        };
+        let current_module_check = if is_fallback_mcu {
+            format!("any(avr_mcu_{}, not(target_arch = \"avr\"))", module_name)
+        } else {
+            format!("avr_mcu_{}", module_name)
+        };
+
+        writeln!(w, "/// The {}.", mcu.device.name)?;
+        if is_fallback_mcu {
+            writeln!(w, "///\n/// This device is chosen as the default when the crate is targeting non-AVR devices.")?;
+        }
+
+        writeln!(w, "#[cfg(any(avr_mcu_{}, feature = \"all-mcus\"{}))] pub mod {};", module_name, cfg_check_default_fallback, module_name)?;
+
+        writeln!(w, "#[cfg({})] pub use self::{} as current;", current_module_check, module_name)?;
         writeln!(w)?;
     }
     writeln!(w)
