@@ -16,5 +16,6 @@ ENV PATH=/home/avr-rust/.cargo/bin:$PATH
 COPY --chown=avr-rust:avr-rust . /code/ruduino
 
 WORKDIR /code/ruduino
+ENV AVR_CPU_FREQUENCY_HZ=16000000
 
 CMD ["cargo", "build", "-Z", "build-std=core", "--target", "avr-atmega328p.json", "--release"]
