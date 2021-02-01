@@ -26,6 +26,9 @@ pub mod modules;
 /// Configuration for the currently-targeted microcontroller.
 pub use avr_config as config;
 
+/// Delay routines.
+pub use avr_delay as delay;
+
 mod register;
 mod pin;
 
