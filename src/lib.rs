@@ -24,7 +24,7 @@ pub mod interrupt;
 pub mod modules;
 
 /// Configuration for the currently-targeted microcontroller.
-pub mod config;
+pub use avr_config as config;
 
 mod register;
 mod pin;
