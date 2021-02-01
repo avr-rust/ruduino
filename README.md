@@ -7,8 +7,8 @@ This library provides a set of reusable components for the Arduino Uno.
 ### Register and bit definitions
 
 ```rust
-use ruduino::PORTB; // Register
-use ruduino::PORTB7; // Pin
+use ruduino::cores::current::PORTB;  // Register
+use ruduino::cores::current::PORTB7; // Pin
 ```
 
 ### Prelude
@@ -26,11 +26,10 @@ without_interrupts(|| {
 Configure a timer.
 
 ```rust
-const CPU_FREQUENCY_HZ: u64 = 16_000_000;
 const DESIRED_HZ_TIM1: f64 = 2.0;
 const TIM1_PRESCALER: u64 = 1024;
 const INTERRUPT_EVERY_1_HZ_1024_PRESCALER: u16 =
-    ((CPU_FREQUENCY_HZ as f64 / (DESIRED_HZ_TIM1 * TIM1_PRESCALER as f64)) as u64 - 1) as u16;
+    ((ruduino::config::CPU_FREQUENCY_HZ as f64 / (DESIRED_HZ_TIM1 * TIM1_PRESCALER as f64)) as u64 - 1) as u16;
 
 timer1::Timer::new()
     .waveform_generation_mode(timer1::WaveformGenerationMode::ClearOnTimerMatchOutputCompare)
@@ -54,9 +53,8 @@ pub unsafe extern "avr-interrupt" fn _ivr_timer1_compare_a() {
 Configure the serial port.
 
 ```rust
-const CPU_FREQUENCY_HZ: u64 = 16_000_000;
 const BAUD: u64 = 9600;
-const UBRR: u16 = (CPU_FREQUENCY_HZ / 16 / BAUD - 1) as u16;
+const UBRR: u16 = (ruduino::config::CPU_FREQUENCY_HZ / 16 / BAUD - 1) as u16;
 
 serial::Serial::new(UBRR)
     .character_size(serial::CharacterSize::EightBits)
@@ -82,3 +80,4 @@ if let Some(b) = serial::try_receive() {
     serial::transmit(b);
 }
 ```
+
