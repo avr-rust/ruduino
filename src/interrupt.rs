@@ -2,6 +2,7 @@
 
 use core::prelude::v1::*;
 use core::marker::PhantomData;
+use core::arch::asm;
 
 /// Helper struct that automatically restores interrupts
 /// on drop.
@@ -22,7 +23,7 @@ pub fn without_interrupts<F, T>(f: F) -> T
 impl DisableInterrupts {
     #[inline(always)]
     pub fn new() -> DisableInterrupts {
-        unsafe { llvm_asm!("CLI") }
+        unsafe { asm!("cli") }
         DisableInterrupts(PhantomData)
     }
 }
@@ -30,7 +31,7 @@ impl DisableInterrupts {
 impl Drop for DisableInterrupts {
     #[inline(always)]
     fn drop(&mut self) {
-        unsafe { llvm_asm!("SEI") }
+        unsafe { asm!("sei") }
     }
 }
 
