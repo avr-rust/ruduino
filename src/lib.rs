@@ -1,6 +1,6 @@
 //! Definitions of register addresses and bits within those registers
 
-#![feature(llvm_asm)]
+#![feature(asm_experimental_arch)]
 #![feature(associated_type_defaults)]
 #![feature(lang_items)]
 #![feature(proc_macro_hygiene)]
