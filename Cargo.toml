@@ -29,7 +29,7 @@ all-mcus = []
 
 [dependencies]
 avr-config = { version = "2.0", features = ["cpu-frequency"] }
-avr_delay = "0.4"
+avr_delay = { git = "https://github.com/avr-rust/delay", version = "0.4" }
 avr-std-stub = { version = "1.0", optional = true }
 const_env--value = "0.1"
 target-cpu-macro = "0.1"
