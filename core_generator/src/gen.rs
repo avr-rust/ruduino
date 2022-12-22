@@ -39,6 +39,8 @@ pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
 
         writeln!(w, "impl {} {{", register.name)?;
         for bitfield in register.bitfields.iter() {
+            if !(bitfield.name.chars().all(|c| char::is_uppercase(c) || char::is_numeric(c))) { continue }
+
             // Create a mask for the whole bitset.
             writeln!(w, "    pub const {}: RegisterBits<Self> = RegisterBits::new(0x{:x});", bitfield.name, bitfield.mask)?;
 
