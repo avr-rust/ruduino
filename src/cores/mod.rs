@@ -24,6 +24,10 @@
 #[cfg(any(avr_mcu_atmega88pa, feature = "all-mcus"))] pub mod atmega88pa;
 #[cfg(avr_mcu_atmega88pa)] pub use self::atmega88pa as current;
 
+/// The ATmega16U4.
+#[cfg(any(avr_mcu_atmega16u4, feature = "all-mcus"))] pub mod atmega16u4;
+#[cfg(avr_mcu_atmega16u4)] pub use self::atmega16u4 as current;
+
 /// The ATmega168.
 #[cfg(any(avr_mcu_atmega168, feature = "all-mcus"))] pub mod atmega168;
 #[cfg(avr_mcu_atmega168)] pub use self::atmega168 as current;
@@ -31,6 +35,10 @@
 /// The ATmega328P.
 #[cfg(any(avr_mcu_atmega328p, feature = "all-mcus"))] pub mod atmega328p;
 #[cfg(avr_mcu_atmega328p)] pub use self::atmega328p as current;
+
+/// The ATmega32U4.
+#[cfg(any(avr_mcu_atmega32u4, feature = "all-mcus"))] pub mod atmega32u4;
+#[cfg(avr_mcu_atmega32u4)] pub use self::atmega32u4 as current;
 
 /// The ATmega48PA.
 #[cfg(any(avr_mcu_atmega48pa, feature = "all-mcus"))] pub mod atmega48pa;
@@ -57,5 +65,3 @@
 /// The ATmega48.
 #[cfg(any(avr_mcu_atmega48, feature = "all-mcus"))] pub mod atmega48;
 #[cfg(avr_mcu_atmega48)] pub use self::atmega48 as current;
-
-

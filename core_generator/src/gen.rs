@@ -1,9 +1,33 @@
 use avr_mcu::*;
 use std::io;
 use std::io::prelude::*;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+fn collect_register_bitfields<'a, I: Iterator<Item = &'a Register>>(registers: I) -> impl Iterator<Item = Register> {
+    let mut canonical_registers: HashMap<String, Register> = HashMap::new();
+    for register in registers {
+        let k = register.name.clone();
+        match canonical_registers.get_mut(&k) {
+            Some(existing_register) => {
+                let mut old_bitfields = HashSet::new();
+                for bitfield in &existing_register.bitfields {
+                    old_bitfields.insert(bitfield.name.clone());
+                }
+                let mut new_bitfields: Vec<Bitfield> =
+                    register.bitfields.clone().into_iter().filter(|bitfield| old_bitfields.take(&bitfield.name).is_none()).collect();
+                existing_register.bitfields.append(&mut new_bitfields)
+            }
+            None => {
+                canonical_registers.insert(k, register.clone());
+            }
+        }
+    }
+    canonical_registers.into_values()
+}
 
 pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
-    for register in mcu.registers() {
+    for register in collect_register_bitfields(mcu.registers()) {
         let ty = if register.size == 1 { "u8" } else { "u16" };
 
         // HACK: Skip, atmeg328p pack defines two of these.
@@ -15,6 +39,8 @@ pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
 
         writeln!(w, "impl {} {{", register.name)?;
         for bitfield in register.bitfields.iter() {
+            if !(bitfield.name.chars().all(|c| char::is_uppercase(c) || char::is_numeric(c))) { continue }
+
             // Create a mask for the whole bitset.
             writeln!(w, "    pub const {}: RegisterBits<Self> = RegisterBits::new(0x{:x});", bitfield.name, bitfield.mask)?;
 
@@ -106,14 +132,18 @@ pub fn write_spi_modules(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> 
             let pin_name = self::pin_name(port_instance, port_signal);
 
             let const_name = match &spi_signal_name[..] {
-                "MISO" => "MasterInSlaveOut",
-                "MOSI" => "MasterOutSlaveIn",
-                "SCK" => "Clock",
-                "SS" => "SlaveSelect",
+                "MISO" => Some("MasterInSlaveOut"),
+                "MOSI" => Some("MasterOutSlaveIn"),
+                "SCK" => Some("Clock"),
+                "SS" => Some("SlaveSelect"),
+                "PDI" => None,
+                "PDO" => None,
                 _ => panic!("unknown spi signal name: '{}'", spi_signal_name),
             };
 
-            writeln!(w, "    type {} = {};", const_name, pin_name)?;
+            if let Some(const_name) = const_name {
+                writeln!(w, "    type {} = {};", const_name, pin_name)?
+            }
         }
 
         for reg in module.registers() {
@@ -141,16 +171,22 @@ pub fn write_usarts(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
             writeln!(w, "impl modules::HardwareUsart for {} {{", usart.name)?;
             for register in usart.registers.iter() {
                 let reg_ty = if register.name.starts_with("UDR") { // the data register.
-                    "DataRegister".to_owned()
+                    Some("DataRegister".to_owned())
                 } else if register.name.starts_with("UCSR") { // one of the three control/status registers.
                     let suffix = register.name.chars().rev().next().unwrap();
-                    format!("ControlRegister{}", suffix)
+                    if suffix == 'A' || suffix == 'B' || suffix == 'C' {
+                        Some(format!("ControlRegister{}", suffix))
+                    } else {
+                        None
+                    }
                 } else if register.name.starts_with("UBRR") { // the baud rate register.
-                    "BaudRateRegister".to_owned()
+                    Some("BaudRateRegister".to_owned())
                 } else {
                     panic!("unknown usart register '{}'", register.name);
                 };
-                writeln!(w, "    type {} = {};", reg_ty, register.name)?;
+                if let Some(reg_ty) = reg_ty {
+                    writeln!(w, "    type {} = {};", reg_ty, register.name)?;
+                }
             }
             writeln!(w, "}}")?;
             writeln!(w)?;
@@ -193,12 +229,12 @@ pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
             writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
             writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
             writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-            writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS00;")?;
-            writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS01;")?;
-            writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS02;")?;
-            writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM00;")?;
-            writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM01;")?;
-            writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM020;")?;
+            writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS{}0;", timer_number)?;
+            writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS{}1;", timer_number)?;
+            writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS{}2;", timer_number)?;
+            writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}0;", timer_number)?;
+            writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}1;", timer_number)?;
+            writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}20;", timer_number)?;
             writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
             writeln!(w, "}}")?;
         }
@@ -230,13 +266,13 @@ pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
         writeln!(w, "    type ControlC = {};", find_reg_suffix("TCCR", "C").name)?;
         writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
         writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-        writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS10;")?;
-        writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS11;")?;
-        writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS12;")?;
-        writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM10;")?;
-        writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM11;")?;
-        writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM10;")?;
-        writeln!(w, "    const WGM3: RegisterBits<Self::ControlB> = Self::ControlB::WGM11;")?;
+        writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS{}0;", timer_number)?;
+        writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS{}1;", timer_number)?;
+        writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS{}2;", timer_number)?;
+        writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}0;", timer_number)?;
+        writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}1;", timer_number)?;
+        writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}0;", timer_number)?;
+        writeln!(w, "    const WGM3: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}1;", timer_number)?;
         writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
         writeln!(w, "}}")?;
     }
