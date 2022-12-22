@@ -227,12 +227,12 @@ pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
             writeln!(w, "    type ControlB = {};", find_reg_suffix("TCCR", "B").name)?;
             writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
             writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-            writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS00;")?;
-            writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS01;")?;
-            writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS02;")?;
-            writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM00;")?;
-            writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM01;")?;
-            writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM020;")?;
+            writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS{}0;", timer_number)?;
+            writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS{}1;", timer_number)?;
+            writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS{}2;", timer_number)?;
+            writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}0;", timer_number)?;
+            writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}1;", timer_number)?;
+            writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}20;", timer_number)?;
             writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
             writeln!(w, "}}")?;
         }
@@ -264,13 +264,13 @@ pub fn write_timers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
         writeln!(w, "    type ControlC = {};", find_reg_suffix("TCCR", "C").name)?;
         writeln!(w, "    type InterruptMask = {};", find_reg("TIMSK").name)?;
         writeln!(w, "    type InterruptFlag = {};", find_reg("TIFR").name)?;
-        writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS10;")?;
-        writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS11;")?;
-        writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS12;")?;
-        writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM10;")?;
-        writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM11;")?;
-        writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM10;")?;
-        writeln!(w, "    const WGM3: RegisterBits<Self::ControlB> = Self::ControlB::WGM11;")?;
+        writeln!(w, "    const CS0: RegisterBits<Self::ControlB> = Self::ControlB::CS{}0;", timer_number)?;
+        writeln!(w, "    const CS1: RegisterBits<Self::ControlB> = Self::ControlB::CS{}1;", timer_number)?;
+        writeln!(w, "    const CS2: RegisterBits<Self::ControlB> = Self::ControlB::CS{}2;", timer_number)?;
+        writeln!(w, "    const WGM0: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}0;", timer_number)?;
+        writeln!(w, "    const WGM1: RegisterBits<Self::ControlA> = Self::ControlA::WGM{}1;", timer_number)?;
+        writeln!(w, "    const WGM2: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}0;", timer_number)?;
+        writeln!(w, "    const WGM3: RegisterBits<Self::ControlB> = Self::ControlB::WGM{}1;", timer_number)?;
         writeln!(w, "    const OCIEA: RegisterBits<Self::InterruptMask> = Self::InterruptMask::OCIE{}A;", timer_number)?;
         writeln!(w, "}}")?;
     }
