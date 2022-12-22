@@ -169,16 +169,22 @@ pub fn write_usarts(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
             writeln!(w, "impl modules::HardwareUsart for {} {{", usart.name)?;
             for register in usart.registers.iter() {
                 let reg_ty = if register.name.starts_with("UDR") { // the data register.
-                    "DataRegister".to_owned()
+                    Some("DataRegister".to_owned())
                 } else if register.name.starts_with("UCSR") { // one of the three control/status registers.
                     let suffix = register.name.chars().rev().next().unwrap();
-                    format!("ControlRegister{}", suffix)
+                    if suffix == 'A' || suffix == 'B' || suffix == 'C' {
+                        Some(format!("ControlRegister{}", suffix))
+                    } else {
+                        None
+                    }
                 } else if register.name.starts_with("UBRR") { // the baud rate register.
-                    "BaudRateRegister".to_owned()
+                    Some("BaudRateRegister".to_owned())
                 } else {
                     panic!("unknown usart register '{}'", register.name);
                 };
-                writeln!(w, "    type {} = {};", reg_ty, register.name)?;
+                if let Some(reg_ty) = reg_ty {
+                    writeln!(w, "    type {} = {};", reg_ty, register.name)?;
+                }
             }
             writeln!(w, "}}")?;
             writeln!(w)?;
