@@ -106,14 +106,18 @@ pub fn write_spi_modules(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> 
             let pin_name = self::pin_name(port_instance, port_signal);
 
             let const_name = match &spi_signal_name[..] {
-                "MISO" => "MasterInSlaveOut",
-                "MOSI" => "MasterOutSlaveIn",
-                "SCK" => "Clock",
-                "SS" => "SlaveSelect",
+                "MISO" => Some("MasterInSlaveOut"),
+                "MOSI" => Some("MasterOutSlaveIn"),
+                "SCK" => Some("Clock"),
+                "SS" => Some("SlaveSelect"),
+                "PDI" => None,
+                "PDO" => None,
                 _ => panic!("unknown spi signal name: '{}'", spi_signal_name),
             };
 
-            writeln!(w, "    type {} = {};", const_name, pin_name)?;
+            if let Some(const_name) = const_name {
+                writeln!(w, "    type {} = {};", const_name, pin_name)?
+            }
         }
 
         for reg in module.registers() {
