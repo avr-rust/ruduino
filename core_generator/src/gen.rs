@@ -1,9 +1,33 @@
 use avr_mcu::*;
 use std::io;
 use std::io::prelude::*;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+fn collect_register_bitfields<'a, I: Iterator<Item = &'a Register>>(registers: I) -> impl Iterator<Item = Register> {
+    let mut canonical_registers: HashMap<String, Register> = HashMap::new();
+    for register in registers {
+        let k = register.name.clone();
+        match canonical_registers.get_mut(&k) {
+            Some(existing_register) => {
+                let mut old_bitfields = HashSet::new();
+                for bitfield in &existing_register.bitfields {
+                    old_bitfields.insert(bitfield.name.clone());
+                }
+                let mut new_bitfields: Vec<Bitfield> =
+                    register.bitfields.clone().into_iter().filter(|bitfield| old_bitfields.take(&bitfield.name).is_none()).collect();
+                existing_register.bitfields.append(&mut new_bitfields)
+            }
+            None => {
+                canonical_registers.insert(k, register.clone());
+            }
+        }
+    }
+    canonical_registers.into_values()
+}
 
 pub fn write_registers(mcu: &Mcu, w: &mut dyn Write) -> Result<(), io::Error> {
-    for register in mcu.registers() {
+    for register in collect_register_bitfields(mcu.registers()) {
         let ty = if register.size == 1 { "u8" } else { "u16" };
 
         // HACK: Skip, atmeg328p pack defines two of these.
